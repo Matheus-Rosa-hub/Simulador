@@ -3,15 +3,15 @@ function login() {
     const user = document.getElementById("username").value;
     const pass = document.getElementById("password").value;
 
-    if (user !== "A" && pass !== "B") {
+    if (user === "AAAA" && pass === "aaaa") {
 
-        document.getElementById("login-page").style.display = "none";
-
-        document.getElementById("map-page").style.display = "flex";
+        document.body.innerHTML = `
+            <h1>Map</h1>
+        `;
 
     } else {
 
-        alert("Preencha usuário e senha.");
+        alert("Usuário ou senha incorretos.");
 
     }
 }
