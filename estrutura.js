@@ -15,3 +15,27 @@ function login() {
 
     }
 }
+
+function openTab(tabId){
+
+    const contents =
+        document.querySelectorAll(".content");
+
+    contents.forEach(content => {
+        content.classList.remove("active-content");
+    });
+
+    document
+        .getElementById(tabId)
+        .classList
+        .add("active-content");
+
+    const tabs =
+        document.querySelectorAll(".tab");
+
+    tabs.forEach(tab => {
+        tab.classList.remove("active");
+    });
+
+    event.target.classList.add("active");
+}

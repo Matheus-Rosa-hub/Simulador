@@ -53,3 +53,35 @@ body {
     align-items: center;
     font-size: 2rem;
 }
+
+.navbar{
+    display:flex;
+    background:#1f2937;
+    border-bottom:1px solid #374151;
+}
+
+.tab{
+    background:none;
+    border:none;
+    color:white;
+    padding:15px 25px;
+    cursor:pointer;
+    font-size:16px;
+}
+
+.tab:hover{
+    background:#374151;
+}
+
+.tab.active{
+    border-bottom:3px solid #3b82f6;
+}
+
+.content{
+    display:none;
+    padding:30px;
+}
+
+.active-content{
+    display:block;
+}
