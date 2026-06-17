@@ -5,9 +5,8 @@ function login() {
 
     if (user === "AAAA" && pass === "aaaa") {
 
-        document.body.innerHTML = `
-            <h1>Map</h1>
-        `;
+        document.getElementById("login-page").style.display = "none";
+        document.getElementById("map-page").style.display = "block";
 
     } else {
 
