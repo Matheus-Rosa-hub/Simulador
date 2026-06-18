@@ -1,78 +1,77 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"> <!-- Define a codificação de caracteres da página. -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Faz a página se adaptar ao tamanho da tela. -->
     <title>ARGOS</title>
-
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> <!-- Conecta o arquivo de estilos CSS à página. -->
 </head>
 <body>
 
-    <div id="login-page">
-        <div class="login-box">
-            <h1 id="titulo">Configuração de Acesso</h1>
+    <div id="login-page"> <!-- Área inicial de login. -->
+        <div class="login-box"> <!-- Caixa central de autenticação. -->
+            <h1 id="titulo">Configuração de Acesso</h1> <!-- Título do formulário de acesso. -->
 
             <input
                 type="text"
                 id="username"
                 placeholder="Usuário"
-            >
+            > <!-- Campo para digitar o usuário. -->
 
             <input
                 type="password"
                 id="password"
                 placeholder="Senha"
-            >
+            > <!-- Campo para digitar a senha. -->
 
             <button onclick="login()">
-                Entrar
+                Entrar <!-- Botão que dispara a função de login. -->
             </button>
         </div>
     </div>
 
-    <div id="map-page" style="display:none;">
+    <div id="map-page" style="display:none;"> <!-- Área principal mostrada depois do login. -->
 
-        <div class="navbar">
+        <div class="navbar"> <!-- Barra com as abas de navegação. -->
 
             <button class="tab active"
                     onclick="openTab('map')">
-                MAPA
+                MAPA <!-- Aba inicial do mapa. -->
             </button>
 
             <button class="tab"
                     onclick="openTab('alertas')">
-                Alertas
+                Alertas <!-- Aba de alertas. -->
             </button>
 
             <button class="tab"
                     onclick="openTab('historico')">
-                Histórico
+                Histórico <!-- Aba de histórico. -->
             </button>
 
             <button class="tab"
                     onclick="openTab('diagnostico')">
-                Diagnóstico de Rede
+                Diagnóstico de Rede <!-- Aba de diagnóstico de rede. -->
             </button>
 
             <button class="tab"
                     onclick="openTab('relatorios')">
-                Relatórios
+                Relatórios <!-- Aba de relatórios. -->
             </button>
 
         </div>
 
-        <div id="map" class="content active-content">
+        <div id="map" class="content active-content"> <!-- Conteúdo da aba MAPA. -->
 
             <h1>Map</h1>
 
-                <div class="legend-box">
+                <div class="legend-box"> <!-- Caixa de legenda fixa. -->
 
                     <h3>Legenda</h3>
 
-                        <div class="legend-item">
-                            <span class="legend-icon station"></span>
-                            <span>Estação</span>
+                        <div class="legend-item"> <!-- Item da legenda para estação. -->
+                            <span class="legend-icon station"></span> <!-- Marcador visual da estação. -->
+                            <span>Estação</span> <!-- Texto descritivo do item. -->
                         </div>
 
                         <div class="legend-item">
@@ -90,24 +89,24 @@
         </div>
 
         <div id="alertas" class="content">
-            <h1>Alertas</h1>
+            <h1>Alertas</h1> <!-- Conteúdo da aba de alertas. -->
         </div>
 
         <div id="historico" class="content">
-            <h1>Histórico</h1>
+            <h1>Histórico</h1> <!-- Conteúdo da aba de histórico. -->
         </div>
 
         <div id="diagnostico" class="content">
-            <h1>Diagnóstico de Rede</h1>
+            <h1>Diagnóstico de Rede</h1> <!-- Conteúdo da aba de diagnóstico. -->
         </div>
 
         <div id="relatorios" class="content">
-            <h1>Relatórios</h1>
+            <h1>Relatórios</h1> <!-- Conteúdo da aba de relatórios. -->
         </div>
 
     </div>
 
-    <script src="estrutura.js"></script>
+    <script src="estrutura.js"></script> <!-- Carrega o arquivo JavaScript com as funções da página. -->
 
 </body>
 </html>
