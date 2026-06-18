@@ -101,19 +101,19 @@ body {
 
 .legend-box h3 {
     margin-bottom: 9px;
-    font-size: 10px; 
-    font-weight: bold; 
+    font-size: 12px; 
+    font-weight: bold;
 }
 
 .legend-item {
     display: flex; 
     align-items: center; 
-    margin-bottom: 8px; 
+    margin-bottom: 9px; 
 }
 
 .legend-icon {
-    width: 10px; 
-    height: 10px; 
+    width: 12px; 
+    height: 12px; 
     margin-right: 8px; 
     border-radius: 50%; 
 }
