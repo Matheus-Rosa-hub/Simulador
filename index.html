@@ -36,7 +36,7 @@
 
             <button class="tab active"
                     onclick="openTab('map')">
-                MAPA <!-- Aba inicial do mapa. -->
+                Mapa <!-- Aba inicial do mapa. -->
             </button>
 
             <button class="tab"
@@ -101,7 +101,51 @@
         </div>
 
         <div id="relatorios" class="content">
-            <h1>Relatórios</h1> <!-- Conteúdo da aba de relatórios. -->
+
+            <h1>Relatórios</h1>
+
+            <button class="add-report-btn"
+                    onclick="abrirRelatorio()">
+                +
+            </button>
+
+        </div>
+
+    </div>
+    <div id="report-modal" class="modal">
+
+        <div class="report-window">
+
+            <div class="report-header">
+
+                <button
+                    class="cancel-btn"
+                    onclick="fecharRelatorio()">
+                    Cancelar
+                </button>
+
+            </div>
+
+            <div class="report-body">
+
+                <label>Nome:</label>
+                <input type="text">
+
+                <label>Instituição vinculada:</label>
+                <input type="text">
+
+                <label>Situação:</label>
+                <input type="text">
+
+                <label>Documentação:</label>
+
+                <textarea
+                    rows="10"
+                    placeholder="Insira o relatório aqui...">
+                </textarea>
+
+            </div>
+
         </div>
 
     </div>

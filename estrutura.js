@@ -18,7 +18,6 @@ function login() {
 function openTab(tabId){
 
     const contents = document.querySelectorAll(".content"); // Seleciona todos os blocos de conteúdo das abas.
-
     contents.forEach(content => { // Remove a classe que deixa uma aba visível.
         content.classList.remove("active-content");
     });
@@ -35,4 +34,18 @@ function openTab(tabId){
     });
 
     event.target.classList.add("active"); // Adiciona o estilo de ativo ao botão clicado.
+}
+
+function abrirRelatorio(){
+
+    document
+        .getElementById("report-modal")
+        .style.display = "flex";
+}
+
+function fecharRelatorio(){
+    
+    document
+        .getElementById("report-modal")
+        .style.display = "none";
 }
