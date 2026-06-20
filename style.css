@@ -120,15 +120,19 @@ body {
 }
 
 .add-report-btn{
-    width:60px;
-    height:60px;
+    width:36px;
+    height:36px;
     border-radius:50%;
-    border:3px solid #666;
-    background:white;
+    border:2px solid #666;
+    background:1f2937;
     color:#666;
-    font-size:42px;
+    font-size:24px;
+    font-weight:bold;
     cursor:pointer;
     margin-top:20px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
 }
 
 .modal{
@@ -183,6 +187,10 @@ body {
 .report-body textarea{
     resize:none;
     height:280px;
-    padding:10px;
+    padding:6px;
+    margin:0;
     border:1px solid #777;
+    font-size:14px;
+    line-height:1.4;
+    box-sizing:border-box;
 }
