@@ -165,6 +165,14 @@ body {
     padding-right:10px;
 }
 
+.save-btn{
+    border:1px solid #444;
+    background:#f5f5f5;
+    cursor:pointer;
+    padding:4px 10px;
+    margin-right:8px;
+}
+
 .cancel-btn{
     border:1px solid #444;
     background:white;
