@@ -22,10 +22,7 @@ function openTab(tabId){
         content.classList.remove("active-content");
     });
 
-    document
-        .getElementById(tabId)
-        .classList
-        .add("active-content"); // Ativa apenas o conteúdo da aba escolhida.
+    document.getElementById(tabId).classList.add("active-content"); // Ativa apenas o conteúdo da aba escolhida.
 
     const tabs = document.querySelectorAll(".tab"); // Seleciona todos os botões de aba.
 
@@ -43,9 +40,7 @@ function abrirRelatorio(){
 
 function fecharRelatorio(){
     
-    document
-        .getElementById("report-modal")
-        .style.display = "none";
+    document.getElementById("report-modal").style.display = "none";
 }
 
 function limparFormulario(){
@@ -58,21 +53,46 @@ function limparFormulario(){
 
 function salvarRelatorio(){
 
-    const lista =
-        document.getElementById("lista-relatorios");
+    const nome =document.getElementById("nome").value;
 
-    const card =
-        document.createElement("div");
+    const instituicao = document.getElementById("instituicao").value;
+
+    const situacao =document.getElementById("situacao").value;
+
+    const documentacao = document.getElementById("documentacao").value;
+
+    const lista = document.getElementById("lista-relatorios");
+
+    const card = document.createElement("div");
 
     card.className = "report-card";
 
+    const quantidade = document.querySelectorAll(".report-card").length + 1;
+
     card.innerHTML = `
-        <strong>Relatório</strong>
-        <br>
-        ${document.getElementById("situacao").value}
-        <br>
-        ${new Date().toLocaleDateString()}
+        <div class="report-title">
+            Relatório ${quantidade}
+        </div>
+
+        <div class="report-subtitle">
+            ${situacao}
+        </div>
+
+        <div class="report-date">
+            ${new Date().toLocaleDateString()}
+        </div>
     `;
+
+    card.onclick = function(){
+
+        alert(
+            "Nome: " + nome + "\n\n" +
+            "Instituição: " + instituicao + "\n\n" +
+            "Situação: " + situacao + "\n\n" +
+            "Documentação:\n" + documentacao
+        );
+    };
+
     lista.appendChild(card);
     limparFormulario();
     fecharRelatorio();
