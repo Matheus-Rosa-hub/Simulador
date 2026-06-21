@@ -70,9 +70,10 @@ function salvarRelatorio(){
         <strong>Relatório</strong>
         <br>
         ${document.getElementById("situacao").value}
-        </br>
+        <br>
         ${new Date().toLocaleDateString()}
     `;
     lista.appendChild(card);
+    limparFormulario();
     fecharRelatorio();
 }
