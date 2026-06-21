@@ -104,8 +104,11 @@
 
             <h1>Relatórios</h1>
 
-            <button class="add-report-btn"
-                    onclick="abrirRelatorio()">
+            <div id="lista-relatorios"></div>
+
+            <button
+                class="add-report-btn"
+                onclick="abrirRelatorio()">
                 +
             </button>
 
@@ -118,12 +121,6 @@
         <div class="report-window">
 
             <div class="report-header">
-
-                <button
-                    class="save-btn"
-                    onclick="salvarRelatorio()">
-                    Salvar
-                </button>
 
                 <button
                     class="cancel-btn"
@@ -151,6 +148,16 @@
                     placeholder="Insira o relatório aqui..."
                     id="documentacao">
                 </textarea>
+
+                <div class="save-area">
+
+                    <button
+                        class="save-btn"
+                        onclick="salvarRelatorio()">
+                        Salvar
+                    </button>
+
+                </div>
 
             </div>
 

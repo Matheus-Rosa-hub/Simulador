@@ -204,3 +204,17 @@ body {
     font-size:14px;
     line-height:1.4;
 }
+
+.save-area{
+    margin-top:15px;
+    display:flex;
+    justify-content:flex-start;
+}
+
+.report-card{
+    border:1px solid #888;
+    padding:12px;
+    margin-bottom:10px;
+    background:white;
+    color:black;
+}

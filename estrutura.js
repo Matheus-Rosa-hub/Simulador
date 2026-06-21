@@ -47,3 +47,32 @@ function fecharRelatorio(){
         .getElementById("report-modal")
         .style.display = "none";
 }
+
+function limparFormulario(){
+
+    document.getElementById("nome").value = "";
+    document.getElementById("instituicao").value = "";
+    document.getElementById("situacao").value = "";
+    document.getElementById("documentacao").value = "";
+}
+
+function salvarRelatorio(){
+
+    const lista =
+        document.getElementById("lista-relatorios");
+
+    const card =
+        document.createElement("div");
+
+    card.className = "report-card";
+
+    card.innerHTML = `
+        <strong>Relatório</strong>
+        <br>
+        ${document.getElementById("situacao").value}
+        </br>
+        ${new Date().toLocaleDateString()}
+    `;
+    lista.appendChild(card);
+    fecharRelatorio();
+}
