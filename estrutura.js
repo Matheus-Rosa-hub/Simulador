@@ -38,8 +38,7 @@ function openTab(tabId){
 
 function abrirRelatorio(){
 
-    document.getElementById("report-modal") = "";
-    document.style.display = "flex";
+    document.getElementById("report-modal").style.display = "flex";
 }
 
 function fecharRelatorio(){
