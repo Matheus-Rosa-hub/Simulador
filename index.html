@@ -4,6 +4,7 @@
     <meta charset="UTF-8"> <!-- Define a codificação de caracteres da página. -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Faz a página se adaptar ao tamanho da tela. -->
     <title>ARGOS</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
     <link rel="stylesheet" href="style.css"> <!-- Conecta o arquivo de estilos CSS à página. -->
 </head>
 <body>
@@ -61,28 +62,28 @@
 
         </div>
 
-        <div id="map" class="content active-content"> <!-- Conteúdo da aba MAPA. -->
+        <div id="map" class="content active-content">
 
-            <h1>Mapa</h1>
+            <div id="mapa-regiao"></div>
 
-                <div class="legend-box"> <!-- Caixa de legenda fixa. -->
+                <div class="legend-box">
 
                     <h3>Legenda</h3>
 
-                        <div class="legend-item"> <!-- Item da legenda para estação. -->
-                            <span class="legend-icon station"></span> <!-- Marcador visual da estação. -->
-                            <span>Estação</span> <!-- Texto descritivo do item. -->
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon station"></span>
+                        <span>Estação</span>
+                    </div>
 
-                        <div class="legend-item">
-                            <span class="legend-icon condition"></span>
-                            <span>Condição</span>
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon condition"></span>
+                        <span>Condição</span>
+                    </div>
 
-                        <div class="legend-item">
-                            <span class="legend-icon flow"></span>
-                            <span>Fluxo</span>
-                        </div>
+                    <div class="legend-item">
+                        <span class="legend-icon flow"></span>
+                        <span>Fluxo</span>
+                    </div>
 
                 </div>
 
@@ -160,7 +161,8 @@
         </div>
 
     </div>
-
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"> </script>
     <script src="estrutura.js"></script> <!-- Carrega o arquivo JavaScript com as funções da página. -->
 
 </body>

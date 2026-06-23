@@ -54,6 +54,12 @@ body {
     font-size: 2rem; /* Define tamanho grande para o conteúdo inicial, define o tamanho do texto. */
 }
 
+#mapa-regiao{
+    width:100%;
+    height:calc(100vh - 70px);
+    z-index:1;
+}
+
 .navbar {
     display: flex;
     background: #1f2937; 

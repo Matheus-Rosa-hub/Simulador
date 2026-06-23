@@ -13,6 +13,9 @@ function login() {
         alert("Usuário ou senha incorretos."); // Mostra uma mensagem quando o login falha.
 
     }
+    
+    document.getElementById("map-page").style.display = "block";
+    iniciarMapa();
 }
 
 function openTab(tabId){
@@ -96,4 +99,16 @@ function salvarRelatorio(){
     lista.appendChild(card);
     limparFormulario();
     fecharRelatorio();
+}
+
+let mapa;
+
+function iniciarMapa(){
+
+    if(mapa) return;
+
+    mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8); // Inicializa o mapa com a posição central e o nível de zoom.
+
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(mapa);
+
 }
