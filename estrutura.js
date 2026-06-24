@@ -112,5 +112,5 @@ function iniciarMapa(){
 
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:19 }).addTo(mapa);
     
-    L.marker([0, 0]).addTo(mapa).bindPopup("Estação ARGOS-001");
+    L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001");
 }
