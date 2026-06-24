@@ -47,17 +47,20 @@ body {
 }
 
 #map-page {
-    height: 100vh; 
-    display: flex; 
-    justify-content: center; 
-    align-items: center;
-    font-size: 2rem; /* Define tamanho grande para o conteúdo inicial, define o tamanho do texto. */
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#map {
+    position: relative;
+    height: calc(100vh - 55px);
+    padding: 0;
 }
 
 #mapa-regiao{
     width:100%;
-    height:calc(100vh - 70px);
-    z-index:1;
+    height:100%;
 }
 
 .navbar {
