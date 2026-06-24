@@ -16,6 +16,7 @@ function login() {
 
     document.getElementById("map-page").style.display = "block";
     iniciarMapa();
+    setTimeout(() => {mapa.invalidateSize();}, 100);
 }
 
 function openTab(tabId){
