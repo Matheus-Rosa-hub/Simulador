@@ -23,7 +23,6 @@ async function login() {
 
     const user = document.getElementById("username").value; 
     const pass = document.getElementById("password").value; 
-
     const hashDigitado = await hashTexto(pass); // Calcula o hash da senha digitada.
 
     if (user === USUARIO_VALIDO && hashDigitado === HASH_SENHA) {
@@ -33,7 +32,6 @@ async function login() {
 
         iniciarMapa();
 
-        // Simulação de Alertas:
         // Quando o broker MQTT estiver ativo, substituir a linha de baixo por: cliente.connect() / cliente.subscribe()
         // (ver bloco "SIMULAÇÃO DE ALERTAS" no final)
         iniciarSimulacaoAlertas();
@@ -118,16 +116,13 @@ function salvarRelatorio() {
     `;
 
     const detalhes = card.querySelector(".report-details");
-
     detalhes.style.display = "none";
-
     card.onclick = function () {
         detalhes.style.display =
             detalhes.style.display === "none" ? "block" : "none";
     };
 
     lista.appendChild(card);
-
     limparFormulario();
     fecharRelatorio();
 }
@@ -139,7 +134,6 @@ function iniciarMapa() {
 
     if (mapa) return;
     mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8);
-
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
 
     // Marcador de exemplo da primeira estação ARGOS.
@@ -171,13 +165,12 @@ function iniciarMapa() {
           });
       }
  
-   A função registrarAlerta() abaixo NÃO precisa ser alterada —
-   ela apenas renderiza o card na tela, independente da fonte.
+   registrarAlerta() NÃO precisa ser alterada, ela apenas
+   renderiza o card, independente da fonte.
    ============================================================ */
  
 let contadorAlertas = 0; // (Controla o badge) 
- 
-let simulacaoIniciada = false;// Evita múltiplas simulações rodando ao mesmo tempo 
+let simulacaoIniciada = false; // Evita múltiplas simulações rodando ao mesmo tempo 
  
 // AJUSTAR VALORES para a calibração real dos sensores.
 // Referência: Manual de Avisos Meteorológicos — INMET (2021) e Escala de Beaufort — WMO No. 8 (2018)
@@ -187,17 +180,15 @@ const LIMIAR_CHUVA_MM_H       = 25;
  
  
 // SUBSTITUIR pelo cadastro de estações do MQTT.
-const ESTACOES_SIMULADAS = [
-    "Estação 001",
-];
- 
+const ESTACOES_SIMULADAS = ["Estação 001",];
+
 // Cada item é uma função que recebe o nome da estação e retorna
 // SUBSTITUIR pelos dados reais do MQTT.
 const POOL_ALERTAS = [
  
     (est) => ({
         estacao: est,
-        sensor:  "Sensor de Umidade",
+        sensor:  " de Umidade",
         mensagem: `Umidade relativa acima do limiar: ` +
                   `${(Math.random() * 14 + LIMIAR_UMIDADE_PERCENT).toFixed(1)}% ` +
                   `(limiar: ${LIMIAR_UMIDADE_PERCENT}%) — risco de chuva intensa`
@@ -221,7 +212,7 @@ const POOL_ALERTAS = [
  
     (est) => ({
         estacao: est,
-        sensor:  "Sensor de Umidade + Anemômetro",
+        sensor:  " de Umidade + Anemômetro",
         mensagem: `Condição combinada crítica: umidade ` +
                   `${(Math.random() * 10 + 88).toFixed(1)}% e ` +
                   `ventos ${(Math.random() * 30 + 55).toFixed(1)} km/h ` +
@@ -232,15 +223,10 @@ const POOL_ALERTAS = [
  
 // REMOVER quando MQTT estiver ativo.
 function gerarAlertaSimulado() {
-    const estacao  = ESTACOES_SIMULADAS[
-        Math.floor(Math.random() * ESTACOES_SIMULADAS.length)
-    ];
-    const gerador  = POOL_ALERTAS[
-        Math.floor(Math.random() * POOL_ALERTAS.length)
-    ];
+    const estacao  = ESTACOES_SIMULADAS[Math.floor(Math.random() * ESTACOES_SIMULADAS.length)];
+    const gerador  = POOL_ALERTAS[Math.floor(Math.random() * POOL_ALERTAS.length)];
     return gerador(estacao);
 }
- 
  
 // ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
 function registrarAlerta(dados) {
@@ -281,7 +267,5 @@ function iniciarSimulacaoAlertas() {
     simulacaoIniciada = true;
  
     // REMOVER quando o MQTT estiver ativo.
-    setInterval(() => {
-        registrarAlerta(gerarAlertaSimulado());
-    }, 5000);
+    setInterval(() => {registrarAlerta(gerarAlertaSimulado());}, 5000);
 }

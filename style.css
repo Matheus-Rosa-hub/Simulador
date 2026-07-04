@@ -69,7 +69,8 @@ body {
 .navbar {
     display: flex;
     background: var(--bg-secundario); 
-    border-bottom: 1px solid var(--bg-borda); 
+    border-bottom: 1px solid var(--bg-borda);
+    /* padding-top: 10px; */
 }
 
 .tab {
@@ -79,7 +80,7 @@ body {
     padding: 15px 25px;
     cursor: pointer;
     font-size: 16px;
-    position: relative;
+    position: relative; /* se usar padding-top, retirar a linha */
 }
 
 .tab:hover {
