@@ -79,6 +79,7 @@ body {
     padding: 15px 25px;
     cursor: pointer;
     font-size: 16px;
+    position: relative;
 }
 
 .tab:hover {
@@ -283,6 +284,61 @@ body {
     color: #555;
 }
 
+.badge-alerta {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    background: #ef4444;     
+    color: white;
+    border-radius: 50%;      
+    min-width: 18px;
+    height: 18px;
+    padding: 0 4px;         
+    font-size: 11px;
+    font-weight: bold;
+    display: none;           
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    line-height: 1;
+}
+
+#alertas {
+    overflow-y: auto;
+    max-height: calc(100vh - 55px); 
+}
+ 
+.alerta-card {
+    background: white;
+    color: black;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    max-width: 420px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+ 
+.alerta-estacao {
+    font-weight: bold;
+    font-size: 15px;
+    color: #111827;
+    margin-bottom: 6px;
+}
+ 
+.alerta-mensagem {
+    font-size: 13px;
+    color: #dc2626;
+    margin-bottom: 6px;
+    line-height: 1.5;
+}
+ 
+.alerta-timestamp {
+    font-size: 11px;
+    color: #2563eb;
+    font-style: italic;
+}
+
 @media (max-width: 768px) {
 
     .navbar {
@@ -311,5 +367,9 @@ body {
         bottom: 10px;
         right: 10px;
         font-size: 11px;
+    }
+
+    .alerta-card {
+        max-width: 100%;
     }
 }

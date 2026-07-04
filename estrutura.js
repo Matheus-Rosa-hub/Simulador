@@ -33,6 +33,11 @@ async function login() {
 
         iniciarMapa();
 
+        // Simulação de Alertas:
+        // Quando o broker MQTT estiver ativo, substituir a linha de baixo por: cliente.connect() / cliente.subscribe()
+        // (ver bloco "SIMULAÇÃO DE ALERTAS" no final)
+        iniciarSimulacaoAlertas();
+
         setTimeout(() => { mapa.invalidateSize(); }, 100);
 
     } else {
@@ -51,6 +56,15 @@ function openTab(tabId, event) {
     tabs.forEach(tab => {tab.classList.remove("active");});
 
     event.target.classList.add("active");
+
+    // PONTO DE INTEGRAÇÃO — Badge de Alertas
+    // Ao abrir a aba "Alertas", o badge de notificação é zerado:
+    // o usuário sinalizou que viu as mensagens pendentes.
+    if (tabId === 'alertas') {
+        contadorAlertas = 0;
+        const badge = document.getElementById("badge-alertas");
+        if (badge) badge.style.display = "none";
+    }
 }
 
 function abrirRelatorio() {
@@ -131,4 +145,143 @@ function iniciarMapa() {
     // Marcador de exemplo da primeira estação ARGOS.
     // Futuramente, este marcador virá dos dados do broker MQTT.
     L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001");
+}
+
+/* ============================================================
+   SIMULAÇÃO DE ALERTAS
+   ESTE BLOCO INTEIRO DEVE SER SUBSTITUÍDO PELO MQTT!
+   ============================================================
+ 
+   Quando a rede LoRa + broker MQTT estiver disponível:
+ 
+   1. Remova as constantes ESTACOES_SIMULADAS e POOL_ALERTAS.
+   2. Remova a função gerarAlertaSimulado().
+   3. Remova o setInterval dentro de iniciarSimulacaoAlertas().
+   4. Substitua pelo código de conexão MQTT, por exemplo:
+ 
+      import mqtt from 'https://unpkg.com/mqtt/dist/mqtt.min.js';
+ 
+      function iniciarSimulacaoAlertas() {
+          const cliente = mqtt.connect('ws://SEU_BROKER_IP:9001');
+          cliente.subscribe('argos/alertas/#');
+          cliente.on('message', (topico, payload) => {
+              const dado = JSON.parse(payload.toString());
+              // dado deve conter: { estacao, sensor, mensagem }
+              registrarAlerta(dado); // ← esta função NÃO muda
+          });
+      }
+ 
+   A função registrarAlerta() abaixo NÃO precisa ser alterada —
+   ela apenas renderiza o card na tela, independente da fonte.
+   ============================================================ */
+ 
+let contadorAlertas = 0; // (Controla o badge) 
+ 
+let simulacaoIniciada = false;// Evita múltiplas simulações rodando ao mesmo tempo 
+ 
+// AJUSTAR VALORES para a calibração real dos sensores.
+// Referência: Manual de Avisos Meteorológicos — INMET (2021) e Escala de Beaufort — WMO No. 8 (2018)
+const LIMIAR_UMIDADE_PERCENT  = 85;  
+const LIMIAR_VENTO_KMH        = 50;  
+const LIMIAR_CHUVA_MM_H       = 25;  
+ 
+ 
+// SUBSTITUIR pelo cadastro de estações do MQTT.
+const ESTACOES_SIMULADAS = [
+    "Estação 001",
+];
+ 
+// Cada item é uma função que recebe o nome da estação e retorna
+// SUBSTITUIR pelos dados reais do MQTT.
+const POOL_ALERTAS = [
+ 
+    (est) => ({
+        estacao: est,
+        sensor:  "Sensor de Umidade",
+        mensagem: `Umidade relativa acima do limiar: ` +
+                  `${(Math.random() * 14 + LIMIAR_UMIDADE_PERCENT).toFixed(1)}% ` +
+                  `(limiar: ${LIMIAR_UMIDADE_PERCENT}%) — risco de chuva intensa`
+    }),
+ 
+    (est) => ({
+        estacao: est,
+        sensor:  "Anemômetro",
+        mensagem: `Velocidade do vento acima do limiar: ` +
+                  `${(Math.random() * 50 + LIMIAR_VENTO_KMH).toFixed(1)} km/h ` +
+                  `(limiar: ${LIMIAR_VENTO_KMH} km/h) — ventania registrada`
+    }),
+ 
+    (est) => ({
+        estacao: est,
+        sensor:  "Pluviômetro",
+        mensagem: `Precipitação acumulada acima do limiar: ` +
+                  `${(Math.random() * 55 + LIMIAR_CHUVA_MM_H).toFixed(1)} mm/h ` +
+                  `(limiar: ${LIMIAR_CHUVA_MM_H} mm/h) — chuva forte detectada`
+    }),
+ 
+    (est) => ({
+        estacao: est,
+        sensor:  "Sensor de Umidade + Anemômetro",
+        mensagem: `Condição combinada crítica: umidade ` +
+                  `${(Math.random() * 10 + 88).toFixed(1)}% e ` +
+                  `ventos ${(Math.random() * 30 + 55).toFixed(1)} km/h ` +
+                  `— alta probabilidade de tempestade`
+    })
+];
+ 
+ 
+// REMOVER quando MQTT estiver ativo.
+function gerarAlertaSimulado() {
+    const estacao  = ESTACOES_SIMULADAS[
+        Math.floor(Math.random() * ESTACOES_SIMULADAS.length)
+    ];
+    const gerador  = POOL_ALERTAS[
+        Math.floor(Math.random() * POOL_ALERTAS.length)
+    ];
+    return gerador(estacao);
+}
+ 
+ 
+// ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
+function registrarAlerta(dados) {
+ 
+    const lista = document.getElementById("lista-alertas");
+    const card  = document.createElement("div");
+    card.className = "alerta-card";
+ 
+    const agora      = new Date();
+    const data       = agora.toLocaleDateString('pt-BR');
+    const hora       = agora.toLocaleTimeString('pt-BR');
+    const timestamp  = `${data} — ${hora}`;
+ 
+    card.innerHTML = `
+        <div class="alerta-estacao">${dados.estacao}</div>
+        <div class="alerta-mensagem">
+            Sensor ${dados.sensor}: ${dados.mensagem}
+        </div>
+        <div class="alerta-timestamp">${timestamp}</div>
+    `;
+ 
+    lista.prepend(card);    // Alerta mais recente primeiro
+ 
+    // Atualiza o badge, ocultado automaticamente quando o usuário abre a aba.
+    contadorAlertas++;
+    const badge = document.getElementById("badge-alertas");
+    if (badge) {
+        badge.textContent    = contadorAlertas;
+        badge.style.display  = "flex";
+    }
+}
+ 
+// SUBSTITUIR o corpo desta função pela conexão MQTT real.
+function iniciarSimulacaoAlertas() {
+ 
+    // Não inicia duas simulações se login() for chamado mais de uma vez
+    if (simulacaoIniciada) return;
+    simulacaoIniciada = true;
+ 
+    // REMOVER quando o MQTT estiver ativo.
+    setInterval(() => {
+        registrarAlerta(gerarAlertaSimulado());
+    }, 5000);
 }

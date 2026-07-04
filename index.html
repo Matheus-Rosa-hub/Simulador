@@ -92,7 +92,12 @@
         </div>
 
         <div id="alertas" class="content">
-            <h1>Alertas</h1> 
+            <h1>Alertas</h1>
+            <!-- O JS insere os cards aqui via lista.prepend(card),
+                com o mais recente no topo. Quando o MQTT estiver ativo, 
+                registrarAlerta() vai inserir neste elemento — 
+                nenhuma mudança necessária no HTML. -->
+            <div id="lista-alertas"></div>
         </div>
 
         <div id="historico" class="content">
