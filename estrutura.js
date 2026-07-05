@@ -429,8 +429,8 @@ function renderizarDiagnostico() {
         if (!A || !B) return;
         const cor = CORES_REDE[qualidade] || CORES_REDE.sem_conexao;
  
-        for (let i = 1; i <= 6; i++) {
-            const t = i / 7;
+        for (let i = 1; i <= 5; i++) {
+            const t = i / 6;
             svg.appendChild(svgEl('circle', {
                 cx:   A.x + (B.x - A.x) * t,
                 cy:   A.y + (B.y - A.y) * t,
