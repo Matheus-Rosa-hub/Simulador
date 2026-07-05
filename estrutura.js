@@ -312,13 +312,16 @@ let REDE_ESTACOES = [
     { id: 'Estação 001' },
     { id: 'Estação 002' },
     { id: 'Estação 003' },
-    { id: 'Estação 004' }
+    { id: 'Estação 004' },
 ];
  
 let REDE_CONEXOES = [
     { de: 'Estação 001', para: 'Estação 002', qualidade: 'estavel' },
     { de: 'Estação 001', para: 'Estação 003', qualidade: 'estavel' },
     { de: 'Estação 002', para: 'Estação 003', qualidade: 'estavel' },
+    { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel' },
+    { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
+    { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
 ];
  
 const CORES_REDE = {
@@ -356,17 +359,47 @@ function calcularPosicoes(W, H) {
 function desenharEstacaoSVG(svg, x, y, id, qualidade) {
     const cor = CORES_REDE[qualidade] || '#9ca3af';
     const g   = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    const ic  = '#374151';
  
-    g.appendChild(svgEl('rect',  { x: x-28, y: y-28, width: 56, height: 50, rx: 6, fill: '#f9fafb', stroke: cor, 'stroke-width': 2.5 }));
-    g.appendChild(svgEl('line',  { x1: x,   y1: y-22, x2: x,   y2: y+2,  stroke: '#374151', 'stroke-width': 2 }));
-    g.appendChild(svgEl('line',  { x1: x-12, y1: y-22, x2: x+12, y2: y-22, stroke: '#374151', 'stroke-width': 2 }));
-    g.appendChild(svgEl('rect',  { x: x-10, y: y+3,  width: 20, height: 10, rx: 2, fill: '#3b82f6' }));
+    function lin(x1, y1, x2, y2) {
+        g.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: ic, 'stroke-width': 1.8, 'stroke-linecap': 'round' }));
+    }
+ 
+    g.appendChild(svgEl('rect', {
+        x: x-28, y: y-28, width: 56, height: 50, rx: 6,
+        fill: '#f9fafb', stroke: cor, 'stroke-width': 2.5
+    }));
+ 
+    lin(x, y-26, x, y-21);
+    lin(x-14, y-21, x+14, y-21);
+    lin(x-14, y-21, x-14, y-25);  lin(x-14, y-25, x-10, y-25);
+    lin(x+14, y-21, x+14, y-25);  lin(x+10, y-25, x+14, y-25);
+    lin(x, y-21, x, y+2);
+
+    g.appendChild(svgEl('rect', {
+        x: x-6, y: y-11, width: 12, height: 10, rx: 1,
+        stroke: ic, 'stroke-width': 1.8, fill: '#e5e7eb'
+    }));
+ 
+    [-18, -11, -4].forEach(dy => {
+        lin(x-22, y+dy,   x-14, y+dy);
+        lin(x-18, y+dy-3, x-18, y+dy+3);
+    });
+ 
+    g.appendChild(svgEl('rect', {
+        x: x+11, y: y-17, width: 9, height: 8, rx: 1,
+        stroke: ic, 'stroke-width': 1.8, fill: 'none'
+    }));
+ 
+    lin(x, y+2, x-14, y+19);
+    lin(x, y+2, x+14, y+19);
+    lin(x, y+2, x,    y+19);
  
     const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     lbl.setAttribute('x',           x);
     lbl.setAttribute('y',           y + 34);
     lbl.setAttribute('text-anchor', 'middle');
-    lbl.setAttribute('font-size',   '12');
+    lbl.setAttribute('font-size',   '11');
     lbl.setAttribute('font-weight', 'bold');
     lbl.setAttribute('fill',        'white');
     lbl.textContent = id;
@@ -390,14 +423,14 @@ function renderizarDiagnostico() {
     const pos = calcularPosicoes(W, H);
     const map = Object.fromEntries(pos.map(p => [p.id, p]));
  
-    // Desenha 7 dots ao longo de cada caminho de conexão
+    // Desenha 5 dots ao longo de cada caminho de conexão
     REDE_CONEXOES.forEach(({ de, para, qualidade }) => {
         const A = map[de], B = map[para];
         if (!A || !B) return;
         const cor = CORES_REDE[qualidade] || CORES_REDE.sem_conexao;
  
-        for (let i = 1; i <= 7; i++) {
-            const t = i / 8;
+        for (let i = 1; i <= 5; i++) {
+            const t = i / 6;
             svg.appendChild(svgEl('circle', {
                 cx:   A.x + (B.x - A.x) * t,
                 cy:   A.y + (B.y - A.y) * t,
@@ -407,7 +440,6 @@ function renderizarDiagnostico() {
         }
     });
  
-    // Estações renderizadas por cima dos dots; borda reflete melhor conexão ativa
     pos.forEach(({ id, x, y }) => desenharEstacaoSVG(svg, x, y, id, qualidadeEstacao(id)));
 }
  
@@ -436,14 +468,14 @@ function iniciarDiagnostico() {
     setInterval(() => {
         ciclo++;
  
-        if (ciclo === 3) {
+        /*if (ciclo === 3) {
             REDE_ESTACOES.push({ id: 'Estação 004' });
             REDE_CONEXOES.push(
                 { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel'    },
                 { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
                 { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
             );
-        }
+        }*/
  
         REDE_CONEXOES.forEach(con => {
             if (Math.random() < 0.25) con.qualidade = simularVariacaoRede(con.qualidade);
