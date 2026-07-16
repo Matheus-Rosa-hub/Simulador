@@ -1,115 +1,80 @@
 // ===== AUTENTICAÇÃO =====
 const USUARIO_VALIDO = "Equipe";
-const HASH_SENHA = "9ec5adcb162fea7bdcefce818598776ef77423ee0f29bcbe8d5f564b7bd47703"; // SHA-256 da senha "3102".
-
-// Para nova senha (F12):
-//   crypto.subtle.digest('SHA-256', new TextEncoder().encode('SUA_SENHA'))
-//     .then(h => console.log(
-//       Array.from(new Uint8Array(h))
-//         .map(b => b.toString(16).padStart(2, '0'))
-//         .join('')
-//     ));
-
+const HASH_SENHA     = "9ec5adcb162fea7bdcefce818598776ef77423ee0f29bcbe8d5f564b7bd47703";
+ 
 async function hashTexto(texto) {
-
-    const encoder   = new TextEncoder();        // Converte string - bytes (Uint8Array).
-    const data      = encoder.encode(texto);     // Bytes da senha digitada.
+    const data       = new TextEncoder().encode(texto);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-
-    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, '0'))
+        .join('');
 }
-
+ 
 async function login() {
-
-    const user = document.getElementById("username").value; 
-    const pass = document.getElementById("password").value; 
-    const hashDigitado = await hashTexto(pass); // Calcula o hash da senha digitada.
-
+    const user        = document.getElementById("username").value;
+    const pass        = document.getElementById("password").value;
+    const hashDigitado = await hashTexto(pass);
+ 
     if (user === USUARIO_VALIDO && hashDigitado === HASH_SENHA) {
-
         document.getElementById("login-page").style.display = "none";
-        document.getElementById("map-page").style.display   = "flex"; 
-
+        document.getElementById("map-page").style.display   = "flex";
         iniciarMapa();
-
-        // Quando o broker MQTT estiver ativo, substituir a linha de baixo por: cliente.connect() / cliente.subscribe()
-        // (ver bloco "SIMULAÇÃO DE ALERTAS" no final)
-        iniciarSimulacaoAlertas();
-
+        iniciarSimulacaoHistorico(); // ⚠️ SUBSTITUIR: trocar pela conexão MQTT real
         setTimeout(() => { mapa.invalidateSize(); }, 100);
-
     } else {
         alert("Usuário ou senha incorretos.");
     }
 }
-
+ 
+ 
 // ===== NAVEGAÇÃO =====
+ 
 function openTab(tabId, event) {
-
-    const contents = document.querySelectorAll(".content");
-    contents.forEach(content => {content.classList.remove("active-content");});
-
+    document.querySelectorAll(".content").forEach(c => c.classList.remove("active-content"));
     document.getElementById(tabId).classList.add("active-content");
-
-    const tabs = document.querySelectorAll(".tab");
-    tabs.forEach(tab => {tab.classList.remove("active");});
-
+    document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
     event.target.classList.add("active");
-
-    // PONTO DE INTEGRAÇÃO — Badge de Alertas
-    // Ao abrir a aba "Alertas", o badge de notificação é zerado:
-    // o usuário sinalizou que viu as mensagens pendentes.
+ 
     if (tabId === 'alertas') {
         contadorAlertas = 0;
         const badge = document.getElementById("badge-alertas");
         if (badge) badge.style.display = "none";
     }
-
+ 
     if (tabId === 'diagnostico') requestAnimationFrame(iniciarDiagnostico);
 }
-
+ 
+ 
+// ===== RELATÓRIOS =====
+ 
 function abrirRelatorio() {
     document.getElementById("report-modal").style.display = "flex";
 }
-
+ 
 function fecharRelatorio() {
     document.getElementById("report-modal").style.display = "none";
 }
-
+ 
 function limparFormulario() {
-    document.getElementById("nome").value          = "";
-    document.getElementById("instituicao").value   = "";
-    document.getElementById("situacao").value      = "";
-    document.getElementById("documentacao").value  = "";
+    ["nome", "instituicao", "situacao", "documentacao"]
+        .forEach(id => { document.getElementById(id).value = ""; });
 }
-
+ 
 function salvarRelatorio() {
-
-    const nome          = document.getElementById("nome").value;
-    const instituicao   = document.getElementById("instituicao").value;
-    const situacao      = document.getElementById("situacao").value;
-    const documentacao  = document.getElementById("documentacao").value;
-
-    const lista = document.getElementById("lista-relatorios");
-
-    const card = document.createElement("div");
+    const nome         = document.getElementById("nome").value;
+    const instituicao  = document.getElementById("instituicao").value;
+    const situacao     = document.getElementById("situacao").value;
+    const documentacao = document.getElementById("documentacao").value;
+ 
+    const lista    = document.getElementById("lista-relatorios");
+    const card     = document.createElement("div");
     card.className = "report-card";
-
-    const quantidade = document.querySelectorAll(".report-card").length + 1;
-
+    const n        = document.querySelectorAll(".report-card").length + 1;
+ 
     card.innerHTML = `
-        <div class="report-title">
-            Relatório ${quantidade}
-        </div>
-
-        <div class="report-subtitle">
-            ${situacao}
-        </div>
-
-        <div class="report-date">
-            ${new Date().toLocaleDateString('pt-BR')}
-        </div>
-
+        <div class="report-title">Relatório ${n}</div>
+        <div class="report-subtitle">${situacao}</div>
+        <div class="report-date">${new Date().toLocaleDateString('pt-BR')}</div>
         <div class="report-details">
             <p><strong>Nome:</strong> ${nome}</p>
             <p><strong>Instituição:</strong> ${instituicao}</p>
@@ -117,124 +82,53 @@ function salvarRelatorio() {
             <p class="doc-texto">${documentacao}</p>
         </div>
     `;
-
+ 
     const detalhes = card.querySelector(".report-details");
     detalhes.style.display = "none";
-    card.onclick = function () {
-        detalhes.style.display =
-            detalhes.style.display === "none" ? "block" : "none";
+    card.onclick = () => {
+        detalhes.style.display = detalhes.style.display === "none" ? "block" : "none";
     };
-
+ 
     lista.appendChild(card);
     limparFormulario();
     fecharRelatorio();
 }
-
-// MAPA
+ 
+ 
+// ===== MAPA =====
+ 
 let mapa;
-
+ 
 function iniciarMapa() {
-
     if (mapa) return;
     mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
-
-    // Marcador de exemplo da primeira estação ARGOS.
-    // Futuramente, este marcador virá dos dados do broker MQTT.
-    L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001");
-    L.marker([-22.3961, -45.737]).addTo(mapa).bindPopup("Estação ARGOS-002");
-    L.marker([-22.2500, -45.619]).addTo(mapa).bindPopup("Estação ARGOS-003");
-    L.marker([-22.2627, -45.805]).addTo(mapa).bindPopup("Estação ARGOS-004");
-}
-
-/* SIMULAÇÃO DE ALERTAS
-   ESTE BLOCO INTEIRO DEVE SER SUBSTITUÍDO PELO MQTT!
-
-   Quando a rede LoRa + broker MQTT estiver disponível:
- 
-   1. Remova as constantes ESTACOES_SIMULADAS e POOL_ALERTAS.
-   2. Remova a função gerarAlertaSimulado().
-   3. Remova o setInterval dentro de iniciarSimulacaoAlertas().
-   4. Substitua pelo código de conexão MQTT, por exemplo:
- 
-      import mqtt from 'https://unpkg.com/mqtt/dist/mqtt.min.js';
- 
-      function iniciarSimulacaoAlertas() {
-          const cliente = mqtt.connect('ws://SEU_BROKER_IP:9001');
-          cliente.subscribe('argos/alertas/#');
-          cliente.on('message', (topico, payload) => {
-              const dado = JSON.parse(payload.toString());
-              // dado deve conter: { estacao, sensor, mensagem }
-              registrarAlerta(dado); // ← esta função NÃO muda
-          });
-      }
- 
-   registrarAlerta() NÃO precisa ser alterada, ela apenas
-   renderiza o card, independente da fonte.
-   ============================================================ */
- 
-let contadorAlertas = 0; // (Controla o badge) 
-let simulacaoIniciada = false; // Evita múltiplas simulações rodando ao mesmo tempo 
- 
-// AJUSTAR VALORES para a calibração real dos sensores.
-// Referência: Manual de Avisos Meteorológicos — INMET (2021) e Escala de Beaufort — WMO No. 8 (2018)
-const LIMIAR_UMIDADE_PERCENT  = 85;  
-const LIMIAR_VENTO_KMH        = 50;  
-const LIMIAR_CHUVA_MM_H       = 25;  
- 
- 
-// SUBSTITUIR pelo cadastro de estações do MQTT.
-const ESTACOES_SIMULADAS = ["Estação 001", "Estação 002", "Estação 003", "Estação 004"];
-
-// Cada item é uma função que recebe o nome da estação e retorna
-// SUBSTITUIR pelos dados reais do MQTT.
-const POOL_ALERTAS = [
- 
-    (est) => ({
-        estacao: est,
-        sensor:  " de Umidade",
-        mensagem: `Umidade relativa acima do limiar: ` +
-                  `${(Math.random() * 14 + LIMIAR_UMIDADE_PERCENT).toFixed(1)}% ` +
-                  `(limiar: ${LIMIAR_UMIDADE_PERCENT}%) — risco de chuva intensa`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  "Anemômetro",
-        mensagem: `Velocidade do vento acima do limiar: ` +
-                  `${(Math.random() * 50 + LIMIAR_VENTO_KMH).toFixed(1)} km/h ` +
-                  `(limiar: ${LIMIAR_VENTO_KMH} km/h) — ventania registrada`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  "Pluviômetro",
-        mensagem: `Precipitação acumulada acima do limiar: ` +
-                  `${(Math.random() * 55 + LIMIAR_CHUVA_MM_H).toFixed(1)} mm/h ` +
-                  `(limiar: ${LIMIAR_CHUVA_MM_H} mm/h) — chuva forte detectada`
-    }),
- 
-    (est) => ({
-        estacao: est,
-        sensor:  " de Umidade + Anemômetro",
-        mensagem: `Condição combinada crítica: umidade ` +
-                  `${(Math.random() * 10 + 88).toFixed(1)}% e ` +
-                  `ventos ${(Math.random() * 30 + 55).toFixed(1)} km/h ` +
-                  `— alta probabilidade de tempestade`
-    })
-];
- 
- 
-// REMOVER quando MQTT estiver ativo.
-function gerarAlertaSimulado() {
-    const estacao  = ESTACOES_SIMULADAS[Math.floor(Math.random() * ESTACOES_SIMULADAS.length)];
-    const gerador  = POOL_ALERTAS[Math.floor(Math.random() * POOL_ALERTAS.length)];
-    return gerador(estacao);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(mapa);
+    L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001"); // ⚠️ SUBSTITUIR: marcadores virão do MQTT
 }
  
-// ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
+ 
+// ===== SIMULAÇÃO DE ALERTAS =====
+/*
+ * ⚠️ SUBSTITUIR ESTE BLOCO INTEIRO PELA CONEXÃO MQTT:
+ *
+ *   function iniciarSimulacaoAlertas() {
+ *       const cliente = mqtt.connect('ws://SEU_BROKER_IP:9001');
+ *       cliente.subscribe('argos/alertas/#');
+ *       cliente.on('message', (topico, payload) => {
+ *           registrarAlerta(JSON.parse(payload.toString()));
+ *       });
+ *   }
+ *
+ * A função registrarAlerta() não precisa ser alterada.
+ */
+ 
+let contadorAlertas = 0;
+ 
+const LIMIAR_UMIDADE = 85;
+const LIMIAR_VENTO   = 50;
+const LIMIAR_CHUVA   = 25;
+ 
 function registrarAlerta(dados) {
- 
     const idColuna = "col-" + dados.estacao.replace(/\s+/g, '-').toLowerCase();
     let coluna = document.getElementById(idColuna);
  
@@ -248,22 +142,17 @@ function registrarAlerta(dados) {
         titulo.textContent = dados.estacao;
         coluna.appendChild(titulo);
  
-        const lista = document.getElementById("lista-alertas").appendChild(coluna);
+        document.getElementById("lista-alertas").appendChild(coluna);
     }
-
-    const card  = document.createElement("div");
+ 
+    const card = document.createElement("div");
     card.className = "alerta-card";
  
-    const agora      = new Date();
-    const data       = agora.toLocaleDateString('pt-BR');
-    const hora       = agora.toLocaleTimeString('pt-BR');
-    const timestamp  = `${data} — ${hora}`;
+    const agora     = new Date();
+    const timestamp = agora.toLocaleDateString('pt-BR') + " — " + agora.toLocaleTimeString('pt-BR');
  
     card.innerHTML = `
-        <div class="alerta-estacao">${dados.estacao}</div>
-        <div class="alerta-mensagem">
-            Sensor ${dados.sensor}: ${dados.mensagem}
-        </div>
+        <div class="alerta-mensagem">Sensor ${dados.sensor}: ${dados.mensagem}</div>
         <div class="alerta-timestamp">${timestamp}</div>
     `;
  
@@ -274,32 +163,27 @@ function registrarAlerta(dados) {
         coluna.appendChild(card);
     }
  
-    // Atualiza o badge, ocultado automaticamente quando o usuário abre a aba.
     contadorAlertas++;
     const badge = document.getElementById("badge-alertas");
     if (badge) {
-        badge.textContent    = contadorAlertas;
-        badge.style.display  = "flex";
+        badge.textContent   = contadorAlertas;
+        badge.style.display = "flex";
     }
 }
  
-// SUBSTITUIR o corpo desta função pela conexão MQTT real.
 function iniciarSimulacaoAlertas() {
- 
-    // Não inicia duas simulações se login() for chamado mais de uma vez
     if (simulacaoIniciada) return;
     simulacaoIniciada = true;
- 
-    // REMOVER quando o MQTT estiver ativo.
-    setInterval(() => {registrarAlerta(gerarAlertaSimulado());}, 5000);
+    setInterval(() => registrarAlerta(gerarAlertaSimulado()), 5000);
 }
-
-// DIAGNÓSTICO DE REDE
-
-/* SUBSTITUIR: REDE_ESTACOES e REDE_CONEXOES virão do MQTT.
- * renderizarDiagnostico() e desenharEstacaoSVG() não precisam ser alteradas.
+ 
+ 
+// ===== DIAGNÓSTICO DE REDE =====
+/*
+ * ⚠️ SUBSTITUIR: REDE_ESTACOES e REDE_CONEXOES virão do MQTT.
+ * As funções renderizarDiagnostico() e desenharEstacaoSVG() não precisam ser alteradas.
  *
- * Exemplo com MQTT:
+ * Exemplo de integração MQTT:
  *   cliente.on('message', (topico, payload) => {
  *       const { de, para, qualidade } = JSON.parse(payload.toString());
  *       const con = REDE_CONEXOES.find(c => c.de === de && c.para === para);
@@ -316,12 +200,12 @@ let REDE_ESTACOES = [
 ];
  
 let REDE_CONEXOES = [
-    { de: 'Estação 001', para: 'Estação 002', qualidade: 'estavel' },
-    { de: 'Estação 001', para: 'Estação 003', qualidade: 'estavel' },
-    { de: 'Estação 002', para: 'Estação 003', qualidade: 'estavel' },
-    { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel' },
+    { de: 'Estação 001', para: 'Estação 002', qualidade: 'estavel'     },
+    { de: 'Estação 001', para: 'Estação 003', qualidade: 'estavel'     },
+    { de: 'Estação 002', para: 'Estação 003', qualidade: 'estavel'     },
+    { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel'    },
     { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
-    { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
+    { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' },
 ];
  
 const CORES_REDE = {
@@ -365,36 +249,49 @@ function desenharEstacaoSVG(svg, x, y, id, qualidade) {
         g.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: ic, 'stroke-width': 1.8, 'stroke-linecap': 'round' }));
     }
  
+    // Caixa de fundo com borda colorida conforme qualidade da conexão
     g.appendChild(svgEl('rect', {
         x: x-28, y: y-28, width: 56, height: 50, rx: 6,
         fill: '#f9fafb', stroke: cor, 'stroke-width': 2.5
     }));
  
+    // ── Espigão superior ──
     lin(x, y-26, x, y-21);
+ 
+    // ── Barra horizontal do anemômetro ──
     lin(x-14, y-21, x+14, y-21);
+ 
+    // ── Copos em L (esquerda e direita) ──
     lin(x-14, y-21, x-14, y-25);  lin(x-14, y-25, x-10, y-25);
     lin(x+14, y-21, x+14, y-25);  lin(x+10, y-25, x+14, y-25);
+ 
+    // ── Mastro principal ──
     lin(x, y-21, x, y+2);
-
+ 
+    // ── Caixa do sensor no mastro ──
     g.appendChild(svgEl('rect', {
         x: x-6, y: y-11, width: 12, height: 10, rx: 1,
         stroke: ic, 'stroke-width': 1.8, fill: '#e5e7eb'
     }));
  
+    // ── Indicadores laterais esquerdo (3 sinais de +) ──
     [-18, -11, -4].forEach(dy => {
         lin(x-22, y+dy,   x-14, y+dy);
         lin(x-18, y+dy-3, x-18, y+dy+3);
     });
  
+    // ── Sensor adicional à direita ──
     g.appendChild(svgEl('rect', {
         x: x+11, y: y-17, width: 9, height: 8, rx: 1,
         stroke: ic, 'stroke-width': 1.8, fill: 'none'
     }));
  
+    // ── Pernas do tripé ──
     lin(x, y+2, x-14, y+19);
     lin(x, y+2, x+14, y+19);
     lin(x, y+2, x,    y+19);
  
+    // ── Label abaixo da caixa ──
     const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
     lbl.setAttribute('x',           x);
     lbl.setAttribute('y',           y + 34);
@@ -423,14 +320,14 @@ function renderizarDiagnostico() {
     const pos = calcularPosicoes(W, H);
     const map = Object.fromEntries(pos.map(p => [p.id, p]));
  
-    // Desenha 5 dots ao longo de cada caminho de conexão
+    // Desenha 7 dots ao longo de cada caminho de conexão
     REDE_CONEXOES.forEach(({ de, para, qualidade }) => {
         const A = map[de], B = map[para];
         if (!A || !B) return;
         const cor = CORES_REDE[qualidade] || CORES_REDE.sem_conexao;
  
-        for (let i = 1; i <= 5; i++) {
-            const t = i / 6;
+        for (let i = 1; i <= 7; i++) {
+            const t = i / 8;
             svg.appendChild(svgEl('circle', {
                 cx:   A.x + (B.x - A.x) * t,
                 cy:   A.y + (B.y - A.y) * t,
@@ -440,6 +337,7 @@ function renderizarDiagnostico() {
         }
     });
  
+    // Estações renderizadas por cima dos dots; borda reflete melhor conexão ativa
     pos.forEach(({ id, x, y }) => desenharEstacaoSVG(svg, x, y, id, qualidadeEstacao(id)));
 }
  
@@ -464,18 +362,18 @@ function iniciarDiagnostico() {
  
     let ciclo = 0;
  
-    //SUBSTITUIR: intervalo e dados simulados serão removidos quando MQTT fornecer conectividade real
+    // ⚠️ SUBSTITUIR: intervalo e dados simulados serão removidos quando MQTT fornecer conectividade real
     setInterval(() => {
         ciclo++;
  
-        /*if (ciclo === 3) {
-            REDE_ESTACOES.push({ id: 'Estação 004' });
-            REDE_CONEXOES.push(
-                { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel'    },
-                { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
-                { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
-            );
-        }*/
+        // ⚠️ SUBSTITUIR: bloco abaixo simula adição dinâmica de estação — virá do MQTT
+        // if (ciclo === 3) {
+        //     REDE_ESTACOES.push({ id: 'Estação 005' });
+        //     REDE_CONEXOES.push(
+        //         { de: 'Estação 001', para: 'Estação 005', qualidade: 'instavel'    },
+        //         { de: 'Estação 002', para: 'Estação 005', qualidade: 'sem_conexao' },
+        //     );
+        // }
  
         REDE_CONEXOES.forEach(con => {
             if (Math.random() < 0.25) con.qualidade = simularVariacaoRede(con.qualidade);
@@ -484,3 +382,4 @@ function iniciarDiagnostico() {
         renderizarDiagnostico();
     }, 4000);
 }
+ 
