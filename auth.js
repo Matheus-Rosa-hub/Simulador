@@ -2,7 +2,7 @@
 // Este arquivo é carregado por TODAS as páginas.
  
 const USUARIO_VALIDO = "Equipe";
-const HASH_SENHA     = "9ec5adcb162fea7bdcefce818598776ef77423ee0f29bcbe8d5f564b7bd47703";
+const HASH_SENHA     = "559aead08264d5795d3909718cdd05abd49572e84fe55590eef31a88a08fdffd";
  
 // Para gerar hash de nova senha (F12 → Console):
 //   crypto.subtle.digest('SHA-256', new TextEncoder().encode('SUA_SENHA'))
