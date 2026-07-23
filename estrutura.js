@@ -1,4 +1,4 @@
-// ===== AUTENTICAÇÃO =====
+// AUTENTICAÇÃO 
 const USUARIO_VALIDO = "Equipe";
 const HASH_SENHA = "9ec5adcb162fea7bdcefce818598776ef77423ee0f29bcbe8d5f564b7bd47703"; // SHA-256 da senha "3102".
 
@@ -27,10 +27,8 @@ async function login() {
 
     if (user === USUARIO_VALIDO && hashDigitado === HASH_SENHA) {
 
-        document.getElementById("login-page").style.display = "none";
-        document.getElementById("map-page").style.display   = "flex"; 
-
-        iniciarMapa();
+        sessionStorage.setItem('argos_auth', '1');
+        window.location.href = 'index.html';
 
         // Quando o broker MQTT estiver ativo, substituir a linha de baixo por: cliente.connect() / cliente.subscribe()
         // (ver bloco "SIMULAÇÃO DE ALERTAS" no final)
@@ -43,7 +41,22 @@ async function login() {
     }
 }
 
-// ===== NAVEGAÇÃO =====
+function checkAuth() {
+    if (!sessionStorage.getItem('argos_auth')) {
+        window.location.href = 'login.html';
+    }
+}
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+        if (!document.getElementById('mapa-regiao')) return;
+        checkAuth();
+        iniciarMapa();
+        //Substituir por cliente.connect() / cliente.subscribe()
+        setTimeout(() => { if (mapa) mapa.invalidateSize(); }, 100);
+    });
+
+// NAVEGAÇÃO 
 function openTab(tabId, event) {
 
     const contents = document.querySelectorAll(".content");
@@ -68,6 +81,7 @@ function openTab(tabId, event) {
     if (tabId === 'diagnostico') requestAnimationFrame(iniciarDiagnostico);
 }
 
+// RELATÓRIOS
 function abrirRelatorio() {
     document.getElementById("report-modal").style.display = "flex";
 }
@@ -141,11 +155,121 @@ function iniciarMapa() {
 
     // Marcador de exemplo da primeira estação ARGOS.
     // Futuramente, este marcador virá dos dados do broker MQTT.
-    L.marker([-22.2473, -45.731]).addTo(mapa).bindPopup("Estação ARGOS-001");
-    L.marker([-22.3961, -45.737]).addTo(mapa).bindPopup("Estação ARGOS-002");
-    L.marker([-22.2500, -45.619]).addTo(mapa).bindPopup("Estação ARGOS-003");
-    L.marker([-22.2627, -45.805]).addTo(mapa).bindPopup("Estação ARGOS-004");
+    const ESTACOES = [
+
+    {
+        nome: "Estação 001",
+        latitude: -22.2473,
+        longitude: -45.731,
+        alertas: 0,
+        marcador: null
+    },
+
+    {
+        nome: "Estação 002",
+        latitude: -22.3961,
+        longitude: -45.737,
+        alertas: 0,
+        marcador: null
+    },
+
+    {
+        nome: "Estação 003",
+        latitude: -22.2500,
+        longitude: -45.619,
+        alertas: 0,
+        marcador: null
+    },
+
+    {
+        nome: "Estação 004",
+        latitude: -22.2627,
+        longitude: -45.805,
+        alertas: 0,
+        marcador: null
+    }
+
+];
+
+    estacoes.forEach(estacao=>{
+
+        L.marker([estacao.lat, estacao.lng])
+        .addTo(mapa)
+        .bindPopup(
+            `<b>${estacao.nome}</b>
+            <br>
+            Alertas ativos: ${estacao.alertas}`
+        );
+    });
 }
+
+// ANÁLISE GRÁFICA
+let sensorChart;
+
+function iniciarGrafico(){
+
+    const canvas = document.getElementById("sensorChart");
+    if(!canvas || sensorChart) return;
+
+    sensorChart = new Chart(canvas,{
+
+        type:"line",
+
+        data:{
+            labels:["00h","04h","08h","12h","16h","20h"],
+
+            datasets:[
+                {
+                    label:"Temperatura",
+                    data:[20,22,24,27,26,22]
+                },
+
+                {
+                    label:"Umidade",
+                    data:[88,83,76,71,69,80]
+                },
+
+                {
+                    label:"Pluviometria",
+                    data:[3,5,2,0,0,6]
+                },
+
+                {
+                    label:"Velocidade do vento",
+                    data:[5,12,18,16,10,7]
+                },
+
+                {
+                    label:"Nível do rio",
+                    data:[1.20,1.22,1.25,1.26,1.24,1.21]
+                }
+            ]
+        },
+
+        options:{
+            responsive:true,
+            maintainAspectRatio:false
+        }
+    });
+}
+
+function toggleDataset(indice){
+    const dataset = sensorChart.getDatasetMeta(indice);
+    dataset.hidden = !dataset.hidden;
+    sensorChart.update();
+}
+
+setInterval(()=>{
+
+    if(!sensorChart) return;
+    sensorChart.data.datasets.forEach(dataset=>{
+        dataset.data.shift();
+        dataset.data.push(Math.floor(Math.random()*40));
+    });
+
+    sensorChart.update();
+
+},5000);
 
 /* SIMULAÇÃO DE ALERTAS
    ESTE BLOCO INTEIRO DEVE SER SUBSTITUÍDO PELO MQTT!
@@ -277,10 +401,10 @@ function registrarAlerta(dados) {
     // Atualiza o badge, ocultado automaticamente quando o usuário abre a aba.
     contadorAlertas++;
     const badge = document.getElementById("badge-alertas");
-    if (badge) {
-        badge.textContent    = contadorAlertas;
-        badge.style.display  = "flex";
-    }
+    if (badge) {badge.textContent = contadorAlertas; badge.style.display = "flex";}
+
+    const estacao = ESTACOES.find(e => e.nome === dados.estacao);
+    estacao.alertas++;
 }
  
 // SUBSTITUIR o corpo desta função pela conexão MQTT real.
@@ -484,3 +608,12 @@ function iniciarDiagnostico() {
         renderizarDiagnostico();
     }, 4000);
 }
+
+window.addEventListener("load", () => {
+
+    if(document.getElementById("map-page")){
+        iniciarMapa();
+        iniciarGrafico();
+        iniciarDiagnostico();
+    }
+});
