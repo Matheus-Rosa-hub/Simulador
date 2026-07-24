@@ -71,69 +71,6 @@ function openTab(tabId, event) {
     if (tabId === 'diagnostico') requestAnimationFrame(iniciarDiagnostico);
 }
 
-// RELATÓRIOS
-function abrirRelatorio() {
-    document.getElementById("report-modal").style.display = "flex";
-}
-
-function fecharRelatorio() {
-    document.getElementById("report-modal").style.display = "none";
-}
-
-function limparFormulario() {
-    document.getElementById("nome").value          = "";
-    document.getElementById("instituicao").value   = "";
-    document.getElementById("situacao").value      = "";
-    document.getElementById("documentacao").value  = "";
-}
-
-function salvarRelatorio() {
-
-    const nome          = document.getElementById("nome").value;
-    const instituicao   = document.getElementById("instituicao").value;
-    const situacao      = document.getElementById("situacao").value;
-    const documentacao  = document.getElementById("documentacao").value;
-
-    const lista = document.getElementById("lista-relatorios");
-
-    const card = document.createElement("div");
-    card.className = "report-card";
-
-    const quantidade = document.querySelectorAll(".report-card").length + 1;
-
-    card.innerHTML = `
-        <div class="report-title">
-            Relatório ${quantidade}
-        </div>
-
-        <div class="report-subtitle">
-            ${situacao}
-        </div>
-
-        <div class="report-date">
-            ${new Date().toLocaleDateString('pt-BR')}
-        </div>
-
-        <div class="report-details">
-            <p><strong>Nome:</strong> ${nome}</p>
-            <p><strong>Instituição:</strong> ${instituicao}</p>
-            <p><strong>Documentação:</strong></p>
-            <p class="doc-texto">${documentacao}</p>
-        </div>
-    `;
-
-    const detalhes = card.querySelector(".report-details");
-    detalhes.style.display = "none";
-    card.onclick = function () {
-        detalhes.style.display =
-            detalhes.style.display === "none" ? "block" : "none";
-    };
-
-    lista.appendChild(card);
-    limparFormulario();
-    fecharRelatorio();
-}
-
 // MAPA
 let mapa;
 let estacaoSelecionada = null;
@@ -221,14 +158,13 @@ function atualizarPainel(estacao){
             lista.innerHTML = "<p>Nenhum alerta.</p>";
         } else {
             estacao.historico.forEach(alerta=>{
-            lista.innerHTML += `
-                <div class="alerta-card">
-                    <strong>${alerta.sensor}</strong><br>
+                const card = document.createElement("div");
+                card.className = "alerta-card";
+                card.innerHTML = `
+                    <strong>${alerta.horario}</strong><br>
                     ${alerta.mensagem}
-                    <br><br>
-                    <small>${alerta.horario}</small>
-                </div>
-            `;
+                `;
+                lista.appendChild(card);
             });
         }
     }else{
@@ -253,74 +189,6 @@ function atualizarBadges(){
         }
     });
 }
-
-// ANÁLISE GRÁFICA
-let sensorChart;
-
-function iniciarGrafico(){
-
-    const canvas = document.getElementById("sensorChart");
-    if(!canvas || sensorChart) return;
-
-    sensorChart = new Chart(canvas,{
-
-        type:"line",
-
-        data:{
-            labels:["00s","04s","08s","12s","16s","20s"], //Eixo X (horário)
-
-            datasets:[
-                {
-                    label:"Temperatura",
-                    data:[20,22,24,27,26,22] //Eixo Y (dados)
-                },
-
-                {
-                    label:"Umidade",
-                    data:[88,83,76,71,69,80] //Eixo Y (dados)
-                },
-
-                {
-                    label:"Pluviometria",
-                    data:[3,5,2,0,0,6] //Eixo Y (dados)
-                },
-
-                {
-                    label:"Velocidade do vento",
-                    data:[5,12,18,16,10,7] //Eixo Y (dados)
-                },
-
-                {
-                    label:"Nível do rio",
-                    data:[1.20,1.22,1.25,1.26,1.24,1.21] //Eixo Y (dados)
-                }
-            ]
-        },
-
-        options:{
-            responsive:true,
-            maintainAspectRatio:false
-        }
-    });
-}
-
-function toggleDataset(indice){
-    const dataset = sensorChart.getDatasetMeta(indice);
-    dataset.hidden = !dataset.hidden;
-    sensorChart.update();
-}
-
-setInterval(()=>{
-
-    if(!sensorChart) return;
-    sensorChart.data.datasets.forEach(dataset=>{
-        dataset.data.shift();
-        dataset.data.push(Math.floor(Math.random()*40)); //estacao.alertas = mensagemMQTT.alertas;
-    });
-
-    sensorChart.update();
-
-},5000);
 
 /* SIMULAÇÃO DE ALERTAS
    DEVE SER SUBSTITUÍDO PELO MQTT:
@@ -484,27 +352,80 @@ function registrarAlerta(dados) {
         nivel: obterNivelAlerta(dados.sensor),
         valor: obterValorAlerta(dados.mensagem),
         limite: obterLimiteAlerta(dados.mensagem),
-        mensagem: dados.mensagem,
+        mensagem: `Sensor ${dados.sensor}: ${dados.mensagem}`,
         horario: timestamp
-});
-    atualizarPainel(estacao);
+    });
     atualizarBadges();
-    if(estacaoSelecionada === estacao){atualizarPainel(estacao);}
+    if(estacaoSelecionada && estacaoSelecionada.id === estacao.id){
+        atualizarPainel(estacao);
+    }
 }
  
-// SUBSTITUIR o corpo desta função pela conexão MQTT real.
+// SUBSTITUIR pela conexão MQTT.
 function iniciarSimulacaoAlertas() {
- 
-    // Não inicia duas simulações se login() for chamado mais de uma vez
-    if (simulacaoIniciada) return;
+     if (simulacaoIniciada) return;
     simulacaoIniciada = true;
- 
-    // REMOVER quando o MQTT estiver ativo.
-    setInterval(()=>{
-        const dados = gerarAlertaSimulado();
-        registrarAlerta(dados);
-    },5000);
+    setInterval(() => {registrarAlerta(gerarAlertaSimulado());}, 5000); // REMOVER pelo MQTT.
 }
+
+// ANÁLISE GRÁFICA
+let sensorChart;
+function iniciarGrafico(){
+    const canvas = document.getElementById("sensorChart");
+    if(!canvas || sensorChart) return;
+    sensorChart = new Chart(canvas,{
+        type:"line",
+        data:{
+            labels:["00s","04s","08s","12s","16s","20s"], //Eixo X (horário)
+            datasets:[
+                {
+                    label:"Temperatura",
+                    data:[20,22,24,27,26,22] //Eixo Y (dados)
+                },
+
+                {
+                    label:"Umidade",
+                    data:[88,83,76,71,69,80] //Eixo Y (dados)
+                },
+
+                {
+                    label:"Pluviometria",
+                    data:[3,5,2,0,0,6] //Eixo Y (dados)
+                },
+
+                {
+                    label:"Velocidade do vento",
+                    data:[5,12,18,16,10,7] //Eixo Y (dados)
+                },
+
+                {
+                    label:"Nível do rio",
+                    data:[1.20,1.22,1.25,1.26,1.24,1.21] //Eixo Y (dados)
+                }
+            ]
+        },
+
+        options:{
+            responsive:true,
+            maintainAspectRatio:false
+        }
+    });
+}
+
+function toggleDataset(indice){
+    const dataset = sensorChart.getDatasetMeta(indice);
+    dataset.hidden = !dataset.hidden;
+    sensorChart.update();
+}
+
+setInterval(()=>{
+    if(!sensorChart) return;
+    sensorChart.data.datasets.forEach(dataset=>{
+        dataset.data.shift();
+        dataset.data.push(Math.floor(Math.random()*40)); //estacao.alertas = mensagemMQTT.alertas;
+    });
+    sensorChart.update();
+},5000);
 
 // DIAGNÓSTICO DE REDE
 
@@ -686,6 +607,70 @@ function iniciarDiagnostico() {
     }, 4000);
 }
 
+// RELATÓRIOS
+function abrirRelatorio() {
+    document.getElementById("report-modal").style.display = "flex";
+}
+
+function fecharRelatorio() {
+    document.getElementById("report-modal").style.display = "none";
+}
+
+function limparFormulario() {
+    document.getElementById("nome").value          = "";
+    document.getElementById("instituicao").value   = "";
+    document.getElementById("situacao").value      = "";
+    document.getElementById("documentacao").value  = "";
+}
+
+function salvarRelatorio() {
+
+    const nome          = document.getElementById("nome").value;
+    const instituicao   = document.getElementById("instituicao").value;
+    const situacao      = document.getElementById("situacao").value;
+    const documentacao  = document.getElementById("documentacao").value;
+
+    const lista = document.getElementById("lista-relatorios");
+
+    const card = document.createElement("div");
+    card.className = "report-card";
+
+    const quantidade = document.querySelectorAll(".report-card").length + 1;
+
+    card.innerHTML = `
+        <div class="report-title">
+            Relatório ${quantidade}
+        </div>
+
+        <div class="report-subtitle">
+            ${situacao}
+        </div>
+
+        <div class="report-date">
+            ${new Date().toLocaleDateString('pt-BR')}
+        </div>
+
+        <div class="report-details">
+            <p><strong>Nome:</strong> ${nome}</p>
+            <p><strong>Instituição:</strong> ${instituicao}</p>
+            <p><strong>Documentação:</strong></p>
+            <p class="doc-texto">${documentacao}</p>
+        </div>
+    `;
+
+    const detalhes = card.querySelector(".report-details");
+    detalhes.style.display = "none";
+    card.onclick = function () {
+        detalhes.style.display =
+            detalhes.style.display === "none" ? "block" : "none";
+    };
+
+    lista.appendChild(card);
+    limparFormulario();
+    fecharRelatorio();
+}
+
+// INTEGRAÇÃO GERAL 
 window.addEventListener("load", () => {
     if(!document.getElementById("map-page")) return;
     checkAuth();
