@@ -184,6 +184,22 @@ const ESTACOES = [
     }
 ];
 
+function criarIconeEstacao(estacao){
+
+    return L.divIcon({
+        className:"",
+        html:`
+            <div class="station-marker">
+                <img src="c:\Users\rafae\OneDrive\Área de Trabalho\Matheus\ProjETE\ 2026\estação.PNG">
+                <div id="badge-${estacao.id}" class="station-badge">
+                    ${estacao.alertas}
+                </div>
+            </div>
+        `,
+        iconSize:[36,36],iconAnchor:[18,36]
+    });
+}
+
 function iniciarMapa() {
 
     if (mapa) return;
@@ -191,7 +207,9 @@ function iniciarMapa() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
 
     ESTACOES.forEach(estacao => {
-    estacao.marcador = L.marker([estacao.latitude,estacao.longitude]).addTo(mapa);
+    estacao.marcador = L.marker([estacao.latitude,estacao.longitude],
+        {icon:criarIconeEstacao(estacao)}
+    ).addTo(mapa);
     estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);});
 }
 
@@ -256,7 +274,7 @@ setInterval(()=>{
     if(!sensorChart) return;
     sensorChart.data.datasets.forEach(dataset=>{
         dataset.data.shift();
-        dataset.data.push(Math.floor(Math.random()*40));
+        dataset.data.push(Math.floor(Math.random()*40)); //estacao.alertas = mensagemMQTT.alertas;
     });
 
     sensorChart.update();
@@ -397,7 +415,15 @@ function registrarAlerta(dados) {
 
     const estacao = ESTACOES.find(e => e.nome === dados.estacao);
     estacao.alertas++;
-} 
+}
+
+function atualizarBadges(){
+
+    ESTACOES.forEach(estacao=>{
+        const badge = document.getElementById(`badge-${estacao.id}`);
+        if(badge){badge.textContent = estacao.alertas;}
+    });
+}
  
 // SUBSTITUIR o corpo desta função pela conexão MQTT real.
 function iniciarSimulacaoAlertas() {
