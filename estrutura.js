@@ -185,7 +185,15 @@ function iniciarMapa() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
 
     ESTACOES.forEach(estacao => {
-        estacao.marcador = L.marker([estacao.latitude,estacao.longitude]).addTo(mapa);
+        const icone = L.divIcon({className:"",iconSize:[25,41],iconAnchor:[12,41],popupAnchor:[1,-34],
+            html:`<div class="marker-wrapper">
+             <img src="https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png">
+             <span id="badge-${estacao.id}" class="station-badge"></span>
+             </div>
+            `
+        });
+        estacao.marcador = L.marker([estacao.latitude,estacao.longitude],{icon:icone}).addTo(mapa);
+        estacao.marcador.on("click",function(){atualizarPainel(estacao);});
         estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
         estacao.marcador.on("add", () => {
             const icon = estacao.marcador.getElement();
@@ -199,6 +207,7 @@ function iniciarMapa() {
 }
 
 function atualizarPainel(estacao){
+    document.getElementById("painel-estacao").style.display = "block";
     if(estacao.alertas > 0){
         document.getElementById("status-estacao").textContent = "ALERTA";
         document.getElementById("lista-alertas").innerHTML = `<p> • ${estacao.alertas} alerta(s) ativo(s) </p>`;
@@ -206,10 +215,23 @@ function atualizarPainel(estacao){
         document.getElementById("status-estacao").textContent = "Normal";
         document.getElementById("lista-alertas").innerHTML = "Nenhum alerta.";
     }
-    document.getElementById("painel-estacao").style.display = "block";
     document.getElementById("titulo-estacao").textContent = estacao.nome;
     document.getElementById("alertas-estacao").textContent = estacao.alertas;
     document.getElementById("hora-estacao").textContent = new Date().toLocaleTimeString();
+}
+
+function atualizarBadges(){
+
+    ESTACOES.forEach(estacao=>{
+        const badge = document.getElementById(`badge-${estacao.id}`);
+        if(!badge) return;
+        if (estacao.alertas > 0) {
+            badge.textContent = estacao.alertas;
+            badge.style.display = "flex";
+        } else {
+            badge.style.display = "none";
+        }
+    });
 }
 
 // ANÁLISE GRÁFICA
@@ -410,20 +432,6 @@ function registrarAlerta(dados) {
     estacao.alertas++;
     atualizarPainel(estacao);
     atualizarBadges();
-}
-
-function atualizarBadges(){
-
-    ESTACOES.forEach(estacao=>{
-        const badge = document.getElementById(`badge-${estacao.id}`);
-        if(!badge) return;
-        if (estacao.alertas > 0) {
-            badge.textContent = estacao.alertas;
-            badge.style.display = "flex";
-        } else {
-            badge.style.display = "none";
-        }
-    });
 }
  
 // SUBSTITUIR o corpo desta função pela conexão MQTT real.
