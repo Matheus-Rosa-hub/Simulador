@@ -147,15 +147,9 @@ function salvarRelatorio() {
 // MAPA
 let mapa;
 
-function iniciarMapa() {
-
-    if (mapa) return;
-    mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8);
-    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
-
-    // Marcador de exemplo da primeira estação ARGOS.
-    // Futuramente, este marcador virá dos dados do broker MQTT.
-    const ESTACOES = [
+// Marcador de exemplo da primeira estação ARGOS.
+// Futuramente, este marcador virá dos dados do broker MQTT.
+const ESTACOES = [
 
     {
         nome: "Estação 001",
@@ -188,23 +182,17 @@ function iniciarMapa() {
         alertas: 0,
         marcador: null
     }
-
 ];
 
-    estacao.marcador = L.marker([estacao.latitude, estacao.longitude]).addTo(mapa);
-    estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas: ${estacao.alertas}`
-        
-    );
-    /*ESTACOES.forEach(estacao=>{
+function iniciarMapa() {
 
-        L.marker([estacao.lat, estacao.lng])
-        .addTo(mapa)
-        .bindPopup(
-            `<b>${estacao.nome}</b>
-            <br>
-            Alertas ativos: ${estacao.alertas}`
-        );
-    });*/
+    if (mapa) return;
+    mapa = L.map('mapa-regiao').setView([-22.3, -45.9], 8);
+    L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
+
+    ESTACOES.forEach(estacao => {
+    estacao.marcador = L.marker([estacao.latitude,estacao.longitude]).addTo(mapa);
+    estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);});
 }
 
 // ANÁLISE GRÁFICA
@@ -220,32 +208,32 @@ function iniciarGrafico(){
         type:"line",
 
         data:{
-            labels:["00h","04h","08h","12h","16h","20h"],
+            labels:["00h","04h","08h","12h","16h","20h"], //Eixo X (horário)
 
             datasets:[
                 {
                     label:"Temperatura",
-                    data:[20,22,24,27,26,22]
+                    data:[20,22,24,27,26,22] //Eixo Y (dados)
                 },
 
                 {
                     label:"Umidade",
-                    data:[88,83,76,71,69,80]
+                    data:[88,83,76,71,69,80] //Eixo Y (dados)
                 },
 
                 {
                     label:"Pluviometria",
-                    data:[3,5,2,0,0,6]
+                    data:[3,5,2,0,0,6] //Eixo Y (dados)
                 },
 
                 {
                     label:"Velocidade do vento",
-                    data:[5,12,18,16,10,7]
+                    data:[5,12,18,16,10,7] //Eixo Y (dados)
                 },
 
                 {
                     label:"Nível do rio",
-                    data:[1.20,1.22,1.25,1.26,1.24,1.21]
+                    data:[1.20,1.22,1.25,1.26,1.24,1.21] //Eixo Y (dados)
                 }
             ]
         },
@@ -409,7 +397,7 @@ function registrarAlerta(dados) {
 
     const estacao = ESTACOES.find(e => e.nome === dados.estacao);
     estacao.alertas++;
-}
+} 
  
 // SUBSTITUIR o corpo desta função pela conexão MQTT real.
 function iniciarSimulacaoAlertas() {
