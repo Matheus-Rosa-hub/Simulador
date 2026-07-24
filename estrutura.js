@@ -136,6 +136,7 @@ function salvarRelatorio() {
 
 // MAPA
 let mapa;
+let estacaoSelecionada = null;
 
 // Marcador de exemplo da primeira estação ARGOS.
 // Futuramente, este marcador virá dos dados do broker MQTT.
@@ -147,6 +148,7 @@ const ESTACOES = [
         latitude: -22.2473,
         longitude: -45.731,
         alertas: 0,
+        historico: [],
         marcador: null
     },
 
@@ -156,6 +158,7 @@ const ESTACOES = [
         latitude: -22.3961,
         longitude: -45.737,
         alertas: 0,
+        historico: [],
         marcador: null
     },
 
@@ -165,6 +168,7 @@ const ESTACOES = [
         latitude: -22.2500,
         longitude: -45.619,
         alertas: 0,
+        historico: [],
         marcador: null
     },
 
@@ -174,6 +178,7 @@ const ESTACOES = [
         latitude: -22.2627,
         longitude: -45.805,
         alertas: 0,
+        historico: [],
         marcador: null
     }
 ];
@@ -193,7 +198,7 @@ function iniciarMapa() {
             `
         });
         estacao.marcador = L.marker([estacao.latitude,estacao.longitude],{icon:icone}).addTo(mapa);
-        estacao.marcador.on("click",function(){atualizarPainel(estacao);});
+        estacao.marcador.on("click", function(){estacaoSelecionada = estacao;atualizarPainel(estacao);});
         estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
         estacao.marcador.on("add", () => {
             const icon = estacao.marcador.getElement();
@@ -210,7 +215,22 @@ function atualizarPainel(estacao){
     document.getElementById("painel-estacao").style.display = "block";
     if(estacao.alertas > 0){
         document.getElementById("status-estacao").textContent = "ALERTA";
-        document.getElementById("lista-alertas").innerHTML = `<p> • ${estacao.alertas} alerta(s) ativo(s) </p>`;
+        const lista = document.getElementById("lista-alertas");
+        lista.innerHTML = "";
+        if(estacao.historico.length === 0){
+            lista.innerHTML = "<p>Nenhum alerta.</p>";
+        } else {
+            estacao.historico.forEach(alerta=>{
+            lista.innerHTML += `
+                <div class="alerta-card">
+                    <strong>${alerta.sensor}</strong><br>
+                    ${alerta.mensagem}
+                    <br><br>
+                    <small>${alerta.horario}</small>
+                </div>
+            `;
+            });
+        }
     }else{
         document.getElementById("status-estacao").textContent = "Normal";
         document.getElementById("lista-alertas").innerHTML = "Nenhum alerta.";
@@ -247,7 +267,7 @@ function iniciarGrafico(){
         type:"line",
 
         data:{
-            labels:["00h","04h","08h","12h","16h","20h"], //Eixo X (horário)
+            labels:["00s","04s","08s","12s","16s","20s"], //Eixo X (horário)
 
             datasets:[
                 {
@@ -379,7 +399,35 @@ function gerarAlertaSimulado() {
     const gerador  = POOL_ALERTAS[Math.floor(Math.random() * POOL_ALERTAS.length)];
     return gerador(estacao);
 }
- 
+
+function obterTipoAlerta(sensor){
+    switch(sensor){
+        case "Pluviômetro":
+            return "Chuva Forte";
+        case "Anemômetro":
+            return "Ventania";
+        case " de Umidade":
+            return "Alta Umidade";
+        case " de Umidade + Anemômetro":
+            return "Tempestade";
+        default:
+            return "Alerta";
+    }
+}
+
+function obterNivelAlerta(sensor){
+    switch(sensor){
+        case "Pluviômetro":
+            return "Crítico";
+        case "Anemômetro":
+            return "Alto";
+        case " de Umidade":
+            return "Moderado";
+        default:
+            return "Crítico";
+    }
+}
+
 // ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
 function registrarAlerta(dados) {
  
@@ -430,8 +478,18 @@ function registrarAlerta(dados) {
     const estacao = ESTACOES.find(e => e.nome === dados.estacao);
     if(!estacao) return;
     estacao.alertas++;
+    estacao.historico.unshift({
+        sensor: dados.sensor,
+        tipo: obterTipoAlerta(dados.sensor),
+        nivel: obterNivelAlerta(dados.sensor),
+        valor: obterValorAlerta(dados.mensagem),
+        limite: obterLimiteAlerta(dados.mensagem),
+        mensagem: dados.mensagem,
+        horario: timestamp
+});
     atualizarPainel(estacao);
     atualizarBadges();
+    if(estacaoSelecionada === estacao){atualizarPainel(estacao);}
 }
  
 // SUBSTITUIR o corpo desta função pela conexão MQTT real.
@@ -443,12 +501,8 @@ function iniciarSimulacaoAlertas() {
  
     // REMOVER quando o MQTT estiver ativo.
     setInterval(()=>{
-        ESTACOES.forEach(estacao=>{estacao.alertas = Math.floor(Math.random()*6);}); // estacao.alertas = mensagemMQTT.alertas;
-        atualizarBadges();
-        let estacaoSelecionada = null;
-        estacaoSelecionada = estacao;
-        atualizarPainel(estacao);
-        if(estacaoSelecionada){atualizarPainel(estacaoSelecionada);}
+        const dados = gerarAlertaSimulado();
+        registrarAlerta(dados);
     },5000);
 }
 
