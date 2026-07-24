@@ -185,19 +185,16 @@ function iniciarMapa() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
 
     ESTACOES.forEach(estacao => {
-        estacao.marcador = L.marker([estacao.latitude,estacao.longitude],
-            {icon:L.divIcon({
-                    html: `
-                            <div class="marker-wrapper">
-                                <img src="estacao.svg">
-                                <span id="badge-${estacao.id}" class="badge" style="display:none"> 0 </span>
-                            </div>
-                        `
-                })
-            }
-        ).addTo(mapa);
+        estacao.marcador = L.marker([estacao.latitude,estacao.longitude]).addTo(mapa);
         estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
-        estacao.marcador.on("click",function(){atualizarPainel(estacao);});
+        estacao.marcador.on("add", () => {
+            const icon = estacao.marcador.getElement();
+            const badge = document.createElement("span");
+            badge.className = "station-badge";
+            badge.id = `badge-${estacao.id}`;
+            badge.style.display = "none";
+            icon.appendChild(badge);
+        });
     });
 }
 
@@ -209,7 +206,7 @@ function atualizarPainel(estacao){
         document.getElementById("status-estacao").textContent = "Normal";
         document.getElementById("lista-alertas").innerHTML = "Nenhum alerta.";
     }
-
+    document.getElementById("painel-estacao").style.display = "block";
     document.getElementById("titulo-estacao").textContent = estacao.nome;
     document.getElementById("alertas-estacao").textContent = estacao.alertas;
     document.getElementById("hora-estacao").textContent = new Date().toLocaleTimeString();
@@ -284,29 +281,22 @@ setInterval(()=>{
 },5000);
 
 /* SIMULAÇÃO DE ALERTAS
-   ESTE BLOCO INTEIRO DEVE SER SUBSTITUÍDO PELO MQTT!
+   DEVE SER SUBSTITUÍDO PELO MQTT:
+   1. Remover ESTACOES_SIMULADAS e POOL_ALERTAS.
+   2. Remover gerarAlertaSimulado().
+   3. Remover setInterval() dentro de iniciarSimulacaoAlertas().
+   4. Substituir pelo código de conexão MQTT,ex:
 
-   Quando a rede LoRa + broker MQTT estiver disponível:
- 
-   1. Remova as constantes ESTACOES_SIMULADAS e POOL_ALERTAS.
-   2. Remova a função gerarAlertaSimulado().
-   3. Remova o setInterval dentro de iniciarSimulacaoAlertas().
-   4. Substitua pelo código de conexão MQTT, por exemplo:
- 
       import mqtt from 'https://unpkg.com/mqtt/dist/mqtt.min.js';
- 
-      function iniciarSimulacaoAlertas() {
+      function Alertas() {
           const cliente = mqtt.connect('ws://SEU_BROKER_IP:9001');
           cliente.subscribe('argos/alertas/#');
           cliente.on('message', (topico, payload) => {
               const dado = JSON.parse(payload.toString());
               // dado deve conter: { estacao, sensor, mensagem }
-              registrarAlerta(dado); // ← esta função NÃO muda
+              registrarAlerta(dado); -> NÃO precisa ser alterada.
           });
       }
- 
-   registrarAlerta() NÃO precisa ser alterada, ela apenas
-   renderiza o card, independente da fonte.
    ============================================================ */
  
 let contadorAlertas = 0; // (Controla o badge) 
