@@ -190,7 +190,7 @@ function criarIconeEstacao(estacao){
         className:"",
         html:`
             <div class="station-marker">
-                <img src="c:\Users\rafae\OneDrive\Área de Trabalho\Matheus\estação.png">
+                <img src="c:\Users\rafae\OneDrive\Área de Trabalho\Matheus\estação.PNG">
                 <div id="badge-${estacao.id}" class="station-badge">
                     ${estacao.alertas}
                 </div>
