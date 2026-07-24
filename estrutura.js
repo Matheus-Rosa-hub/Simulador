@@ -162,7 +162,7 @@ function iniciarMapa() {
         latitude: -22.2473,
         longitude: -45.731,
         alertas: 0,
-        marcador: null
+        marcador: 1
     },
 
     {
@@ -170,7 +170,7 @@ function iniciarMapa() {
         latitude: -22.3961,
         longitude: -45.737,
         alertas: 0,
-        marcador: null
+        marcador: 1
     },
 
     {
@@ -178,7 +178,7 @@ function iniciarMapa() {
         latitude: -22.2500,
         longitude: -45.619,
         alertas: 0,
-        marcador: null
+        marcador: 1
     },
 
     {
@@ -186,7 +186,7 @@ function iniciarMapa() {
         latitude: -22.2627,
         longitude: -45.805,
         alertas: 0,
-        marcador: null
+        marcador: 1
     }
 
 ];
