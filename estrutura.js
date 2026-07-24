@@ -191,7 +191,11 @@ function iniciarMapa() {
 
 ];
 
-    ESTACOES.forEach(estacao=>{
+    estacao.marcador = L.marker([estacao.latitude, estacao.longitude]).addTo(mapa);
+    estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas: ${estacao.alertas}`
+        
+    );
+    /*ESTACOES.forEach(estacao=>{
 
         L.marker([estacao.lat, estacao.lng])
         .addTo(mapa)
@@ -200,7 +204,7 @@ function iniciarMapa() {
             <br>
             Alertas ativos: ${estacao.alertas}`
         );
-    });
+    });*/
 }
 
 // ANÁLISE GRÁFICA
