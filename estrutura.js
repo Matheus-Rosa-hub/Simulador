@@ -26,35 +26,25 @@ async function login() {
     const hashDigitado = await hashTexto(pass); // Calcula o hash da senha digitada.
 
     if (user === USUARIO_VALIDO && hashDigitado === HASH_SENHA) {
-
         sessionStorage.setItem('argos_auth', '1');
         window.location.href = 'index.html';
-
-        // Quando o broker MQTT estiver ativo, substituir a linha de baixo por: cliente.connect() / cliente.subscribe()
-        // (ver bloco "SIMULAÇÃO DE ALERTAS" no final)
-        iniciarSimulacaoAlertas();
-
-        setTimeout(() => { mapa.invalidateSize(); }, 100);
-
     } else {
         alert("Usuário ou senha incorretos.");
     }
 }
 
 function checkAuth() {
-    if (!sessionStorage.getItem('argos_auth')) {
-        window.location.href = 'login.html';
-    }
+    if (!sessionStorage.getItem('argos_auth')) {window.location.href = 'login.html';}
 }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    /*document.addEventListener('DOMContentLoaded', () => {
 
         if (!document.getElementById('mapa-regiao')) return;
         checkAuth();
         iniciarMapa();
         //Substituir por cliente.connect() / cliente.subscribe()
         setTimeout(() => { if (mapa) mapa.invalidateSize(); }, 100);
-    });
+    });*/
 
 // NAVEGAÇÃO 
 function openTab(tabId, event) {
@@ -152,6 +142,7 @@ let mapa;
 const ESTACOES = [
 
     {
+        id: 1,
         nome: "Estação 001",
         latitude: -22.2473,
         longitude: -45.731,
@@ -160,6 +151,7 @@ const ESTACOES = [
     },
 
     {
+        id: 2,
         nome: "Estação 002",
         latitude: -22.3961,
         longitude: -45.737,
@@ -168,6 +160,7 @@ const ESTACOES = [
     },
 
     {
+        id: 3,
         nome: "Estação 003",
         latitude: -22.2500,
         longitude: -45.619,
@@ -176,6 +169,7 @@ const ESTACOES = [
     },
 
     {
+        id: 4,
         nome: "Estação 004",
         latitude: -22.2627,
         longitude: -45.805,
@@ -184,22 +178,6 @@ const ESTACOES = [
     }
 ];
 
-function criarIconeEstacao(estacao){
-
-    return L.divIcon({
-        className:"",
-        html:`
-            <div class="station-marker">
-                <img src="c:\Users\rafae\OneDrive\Área de Trabalho\Matheus\estação.PNG">
-                <div id="badge-${estacao.id}" class="station-badge">
-                    ${estacao.alertas}
-                </div>
-            </div>
-        `,
-        iconSize:[36,36],iconAnchor:[18,36]
-    });
-}
-
 function iniciarMapa() {
 
     if (mapa) return;
@@ -207,10 +185,34 @@ function iniciarMapa() {
     L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom: 19}).addTo(mapa);
 
     ESTACOES.forEach(estacao => {
-    estacao.marcador = L.marker([estacao.latitude,estacao.longitude],
-        {icon:criarIconeEstacao(estacao)}
-    ).addTo(mapa);
-    estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);});
+        estacao.marcador = L.marker([estacao.latitude,estacao.longitude],
+            {icon:L.divIcon({
+                    html: `
+                            <div class="marker-wrapper">
+                                <img src="estacao.svg">
+                                <span id="badge-${estacao.id}" class="badge" style="display:none"> 0 </span>
+                            </div>
+                        `
+                })
+            }
+        ).addTo(mapa);
+        estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
+        estacao.marcador.on("click",function(){atualizarPainel(estacao);});
+    });
+}
+
+function atualizarPainel(estacao){
+    if(estacao.alertas > 0){
+        document.getElementById("status-estacao").textContent = "ALERTA";
+        document.getElementById("lista-alertas").innerHTML = `<p> • ${estacao.alertas} alerta(s) ativo(s) </p>`;
+    }else{
+        document.getElementById("status-estacao").textContent = "Normal";
+        document.getElementById("lista-alertas").innerHTML = "Nenhum alerta.";
+    }
+
+    document.getElementById("titulo-estacao").textContent = estacao.nome;
+    document.getElementById("alertas-estacao").textContent = estacao.alertas;
+    document.getElementById("hora-estacao").textContent = new Date().toLocaleTimeString();
 }
 
 // ANÁLISE GRÁFICA
@@ -414,14 +416,23 @@ function registrarAlerta(dados) {
     if (badge) {badge.textContent = contadorAlertas; badge.style.display = "flex";}
 
     const estacao = ESTACOES.find(e => e.nome === dados.estacao);
+    if(!estacao) return;
     estacao.alertas++;
+    atualizarPainel(estacao);
+    atualizarBadges();
 }
 
 function atualizarBadges(){
 
     ESTACOES.forEach(estacao=>{
         const badge = document.getElementById(`badge-${estacao.id}`);
-        if(badge){badge.textContent = estacao.alertas;}
+        if(!badge) return;
+        if (estacao.alertas > 0) {
+            badge.textContent = estacao.alertas;
+            badge.style.display = "flex";
+        } else {
+            badge.style.display = "none";
+        }
     });
 }
  
@@ -433,7 +444,14 @@ function iniciarSimulacaoAlertas() {
     simulacaoIniciada = true;
  
     // REMOVER quando o MQTT estiver ativo.
-    setInterval(() => {registrarAlerta(gerarAlertaSimulado());}, 5000);
+    setInterval(()=>{
+        ESTACOES.forEach(estacao=>{estacao.alertas = Math.floor(Math.random()*6);}); // estacao.alertas = mensagemMQTT.alertas;
+        atualizarBadges();
+        let estacaoSelecionada = null;
+        estacaoSelecionada = estacao;
+        atualizarPainel(estacao);
+        if(estacaoSelecionada){atualizarPainel(estacaoSelecionada);}
+    },5000);
 }
 
 // DIAGNÓSTICO DE REDE
@@ -603,22 +621,11 @@ function iniciarDiagnostico() {
  
     renderizarDiagnostico();
     window.addEventListener('resize', renderizarDiagnostico);
- 
     let ciclo = 0;
  
     //SUBSTITUIR: intervalo e dados simulados serão removidos quando MQTT fornecer conectividade real
     setInterval(() => {
         ciclo++;
- 
-        /*if (ciclo === 3) {
-            REDE_ESTACOES.push({ id: 'Estação 004' });
-            REDE_CONEXOES.push(
-                { de: 'Estação 001', para: 'Estação 004', qualidade: 'instavel'    },
-                { de: 'Estação 002', para: 'Estação 004', qualidade: 'sem_conexao' },
-                { de: 'Estação 003', para: 'Estação 004', qualidade: 'sem_conexao' }
-            );
-        }*/
- 
         REDE_CONEXOES.forEach(con => {
             if (Math.random() < 0.25) con.qualidade = simularVariacaoRede(con.qualidade);
         });
@@ -628,10 +635,10 @@ function iniciarDiagnostico() {
 }
 
 window.addEventListener("load", () => {
-
-    if(document.getElementById("map-page")){
-        iniciarMapa();
-        iniciarGrafico();
-        iniciarDiagnostico();
-    }
+    if(!document.getElementById("map-page")) return;
+    checkAuth();
+    iniciarMapa();
+    iniciarGrafico();
+    iniciarDiagnostico();
+    iniciarSimulacaoAlertas();
 });

@@ -119,43 +119,41 @@ body {
     height: 100%;
 }
 
-.legend-box {
-    position: absolute;
-    bottom: 20px;
-    right: 20px;
-    width: 165px;
-    background: var(--bg-secundario); 
-    color: var(--cor-texto);
-    border: 1px solid #cfcfcf;
-    border-radius: var(--raio-sm);
-    padding: 9px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    z-index: 1000; 
+/* ===============================
+        PAINEL DA ESTAÇÃO
+================================= */
+
+.painel-estacao{
+    position:absolute;
+    top:80px;
+    right:15px;
+    width:280px;
+    min-height:260px;
+    background:white;
+    color:black;
+    border-radius:8px;
+    box-shadow:0 3px 10px rgba(0,0,0,.25);
+    padding:15px;
+    z-index:1000;
 }
 
-.legend-box h3 {
-    margin-bottom: 8px;
-    font-size: 13px;
-    font-weight: bold;
+.painel-estacao h2{
+    font-size:20px;
+    margin-bottom:10px;
 }
 
-.legend-item {
-    display: flex;
-    align-items: center;
-    margin-bottom: 6px;
-    font-size: 12px;
+.painel-estacao h3{
+    margin-top:20px;
+    margin-bottom:8px;
 }
 
-.legend-icon {
-    width: 12px;
-    height: 12px;
-    margin-right: 8px;
-    border-radius: 50%; 
+#lista-alertas{
+    max-height:180px;
+    overflow-y:auto;
+    border:1px solid #ddd;
+    padding:8px;
+    background:#fafafa;
 }
-
-.legend-icon.station   { background-color: var(--cor-destaque);   } 
-.legend-icon.condition { background-color: #f59e0b;             } 
-.legend-icon.flow      { background-color: #10b981;             } 
 
 /* ============================
         ESTAÇÕES DO MAPA

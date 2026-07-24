@@ -36,22 +36,26 @@
 
         <div id="map" class="content active-content">
             <div id="mapa-regiao"></div>
-            <div class="legend-box">
-                <h3>Legenda</h3>
-                <div class="legend-item">
-                    <span class="legend-icon station"></span>
-                    <span>Estação</span>
-                </div>
+            <div id="painel-estacao" class="painel-estacao">
+                <h2 id="titulo-estacao">Nenhuma estação selecionada</h2>
+                <hr>
+                <p>
+                    <strong>Status:</strong>
+                    <span id="status-estacao">Normal</span>
+                </p>
 
-                <div class="legend-item">
-                    <span class="legend-icon condition"></span> 
-                    <span>Condição</span>
-                </div>
+                <p>
+                    <strong>Alertas ativos:</strong>
+                    <span id="alertas-estacao">0</span>
+                </p>
 
-                <div class="legend-item">
-                    <span class="legend-icon flow"></span> 
-                    <span>Fluxo</span>
-                </div>
+                <p>
+                    <strong>Última atualização:</strong>
+                    <span id="hora-estacao">--</span>
+                </p>
+
+                <h3>Eventos</h3>
+                <div id="lista-alertas">Nenhum alerta.</div>
             </div>
         </div>
 
