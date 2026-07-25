@@ -349,106 +349,108 @@ function iniciarSimulacaoAlertas() {
 let sensorChart;
 let graficoTempoInicio = null;
 
+const SERIES_CONFIG = [
+    {
+        label: "Temperatura",
+        borderColor: '#3b82f6',
+        backgroundColor: 'rgba(59,130,246,0.15)',
+        base: 22,
+        min: 18,
+        max: 35,
+        step: 2,
+        initial: [20,22,24,27,26,22]
+    },
+    {
+        label: "Umidade",
+        borderColor: '#10b981',
+        backgroundColor: 'rgba(16,185,129,0.15)',
+        base: 78,
+        min: 60,
+        max: 92,
+        step: 4,
+        initial: [88,83,76,71,69,80]
+    },
+    {
+        label: "Pluviometria",
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,0.15)',
+        base: 4,
+        min: 0,
+        max: 20,
+        step: 3,
+        initial: [3,5,2,0,0,6]
+    },
+    {
+        label: "Velocidade do vento",
+        borderColor: '#ef4444',
+        backgroundColor: 'rgba(239,68,68,0.15)',
+        base: 12,
+        min: 0,
+        max: 40,
+        step: 4,
+        initial: [5,12,18,16,10,7]
+    },
+    {
+        label: "Nível do rio",
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139,92,246,0.15)',
+        base: 1.24,
+        min: 0.8,
+        max: 1.5,
+        step: 0.04,
+        initial: [1.20,1.22,1.25,1.26,1.24,1.21]
+    }
+];
+
+function gerarValorProximo(config, anterior) {
+    if (anterior == null) return config.base;
+    const delta = (Math.random() * config.step * 2) - config.step;
+    const valor = Number((anterior + delta).toFixed(2));
+    return Math.min(config.max, Math.max(config.min, valor));
+}
+
 function iniciarGrafico(){
     const canvas = document.getElementById("sensorChart");
     if(!canvas || sensorChart) return;
     graficoTempoInicio = Date.now();
     Chart.register(ChartZoom);
 
-    sensorChart = new Chart(canvas,{
-        type:"line",
-        data:{
-            datasets:[
-                {
-                    label:"Temperatura",
-                    borderColor: '#3b82f6',
-                    backgroundColor: 'rgba(59,130,246,0.15)',
-                    data: [
-                        {x:0, y:20},
-                        {x:5, y:22},
-                        {x:10, y:24},
-                        {x:15, y:27},
-                        {x:20, y:26},
-                        {x:25, y:22}
-                    ]
-                },
-
-                {
-                    label:"Umidade",
-                    borderColor: '#10b981',
-                    backgroundColor: 'rgba(16,185,129,0.15)',
-                    data: [
-                        {x:0, y:88},
-                        {x:5, y:83},
-                        {x:10, y:76},
-                        {x:15, y:71},
-                        {x:20, y:69},
-                        {x:25, y:80}
-                    ]
-                },
-
-                {
-                    label:"Pluviometria",
-                    borderColor: '#f59e0b',
-                    backgroundColor: 'rgba(245,158,11,0.15)',
-                    data: [
-                        {x:0, y:3},
-                        {x:5, y:5},
-                        {x:10, y:2},
-                        {x:15, y:0},
-                        {x:20, y:0},
-                        {x:25, y:6}
-                    ]
-                },
-
-                {
-                    label:"Velocidade do vento",
-                    borderColor: '#ef4444',
-                    backgroundColor: 'rgba(239,68,68,0.15)',
-                    data: [
-                        {x:0, y:5},
-                        {x:5, y:12},
-                        {x:10, y:18},
-                        {x:15, y:16},
-                        {x:20, y:10},
-                        {x:25, y:7}
-                    ]
-                },
-
-                {
-                    label:"Nível do rio",
-                    borderColor: '#8b5cf6',
-                    backgroundColor: 'rgba(139,92,246,0.15)',
-                    data: [
-                        {x:0, y:1.20},
-                        {x:5, y:1.22},
-                        {x:10, y:1.25},
-                        {x:15, y:1.26},
-                        {x:20, y:1.24},
-                        {x:25, y:1.21}
-                    ]
-                }
-            ]
-        },
-
-        options:{
+    sensorChart = new Chart(canvas,{type:"line",data:{datasets: SERIES_CONFIG.map(config => ({
+            label: config.label,
+            borderColor: config.borderColor,
+            backgroundColor: config.backgroundColor,
+            fill: false,
+            tension: 0.3,
+            pointRadius: 4,
+            data: config.initial.map((value, index) => ({ x: index * 5, y: value }))
+        }))
+    },options:{
             responsive:true,
             maintainAspectRatio:false,
+            layout: { padding: { top: 10, right: 12, bottom: 28, left: 12 } },
+            interaction: { mode: 'nearest', axis: 'x', intersect: false },
             scales: {
                 x: {
                     type: 'linear',
                     min: 0,
                     title: { display: true, text: 'Tempo (s)' },
-                    ticks: {
-                        callback: value => `${value}s`
-                    }
+                    ticks: { callback: value => `${value}s`, autoSkip: true, maxTicksLimit: 12 },
+                    grid: { drawBorder: false }
                 },
                 y: {
-                    title: { display: true, text: 'Valor' }
+                    beginAtZero: true,
+                    title: { display: true, text: 'Valor' },
+                    grid: { drawBorder: false }
                 }
             },
             plugins: {
                 legend: { position: 'top' },
+                tooltip: {
+                    callbacks: {
+                        title: items => items.length ? `Tempo: ${items[0].parsed.x}s` : '',
+                        label: item => `${item.dataset.label}: ${item.parsed.y}`
+                    }
+                },
                 zoom: {
                     zoom: {
                         wheel: { enabled: true },
@@ -464,8 +466,7 @@ function iniciarGrafico(){
                     }
                 }
             }
-        }
-    });
+        }});
 }
 
 function toggleDataset(indice){
@@ -482,8 +483,9 @@ function resetChartZoom(){
 setInterval(()=>{
     if(!sensorChart) return;
     const tempo = Math.floor((Date.now() - graficoTempoInicio) / 1000);
-    sensorChart.data.datasets.forEach(dataset=>{
-        dataset.data.push({ x: tempo, y: Number((Math.random() * 40).toFixed(2)) });
+    sensorChart.data.datasets.forEach((dataset, index)=>{
+        const ultimo = dataset.data.length ? dataset.data[dataset.data.length - 1].y : null;
+        dataset.data.push({ x: tempo, y: gerarValorProximo(SERIES_CONFIG[index], ultimo) });
     });
     sensorChart.update();
 },5000);
