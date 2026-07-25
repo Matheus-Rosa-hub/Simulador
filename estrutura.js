@@ -68,6 +68,10 @@ function openTab(tabId, event) {
         if (badge) badge.style.display = "none";
     }
 
+    if (tabId !== 'map') {
+        document.getElementById('painel-estacao').style.display = 'none';
+    }
+
     if (tabId === 'diagnostico') requestAnimationFrame(iniciarDiagnostico);
 }
 
@@ -135,45 +139,39 @@ function iniciarMapa() {
             `
         });
         estacao.marcador = L.marker([estacao.latitude,estacao.longitude],{icon:icone}).addTo(mapa);
-        estacao.marcador.on("click", function(){estacaoSelecionada = estacao;atualizarPainel(estacao);});
-        estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
-        estacao.marcador.on("add", () => {
-            const icon = estacao.marcador.getElement();
-            const badge = document.createElement("span");
-            badge.className = "station-badge";
-            badge.id = `badge-${estacao.id}`;
-            badge.style.display = "none";
-            icon.appendChild(badge);
+        estacao.marcador.on("click", function(){
+            estacaoSelecionada = estacao;
+            estacao.alertas = 0;
+            atualizarBadges();
+            atualizarPainel(estacao);
         });
+        estacao.marcador.bindPopup(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
     });
+    atualizarBadges();
 }
 
 function atualizarPainel(estacao){
     document.getElementById("painel-estacao").style.display = "block";
-    if(estacao.alertas > 0){
-        document.getElementById("status-estacao").textContent = "ALERTA";
-        const lista = document.getElementById("lista-alertas");
-        lista.innerHTML = "";
-        if(estacao.historico.length === 0){
-            lista.innerHTML = "<p>Nenhum alerta.</p>";
-        } else {
-            estacao.historico.forEach(alerta=>{
-                const card = document.createElement("div");
-                card.className = "alerta-card";
-                card.innerHTML = `
-                    <strong>${alerta.horario}</strong><br>
-                    ${alerta.mensagem}
-                `;
-                lista.appendChild(card);
-            });
-        }
-    }else{
-        document.getElementById("status-estacao").textContent = "Normal";
-        document.getElementById("lista-alertas").innerHTML = "Nenhum alerta.";
-    }
     document.getElementById("titulo-estacao").textContent = estacao.nome;
-    document.getElementById("alertas-estacao").textContent = estacao.alertas;
+    document.getElementById("status-estacao").textContent = estacao.historico.length > 0 ? "ALERTA" : "Normal";
+    document.getElementById("alertas-estacao").textContent = estacao.historico.length;
     document.getElementById("hora-estacao").textContent = new Date().toLocaleTimeString();
+
+    const lista = document.getElementById("lista-alertas");
+    lista.innerHTML = "";
+    if(estacao.historico.length === 0){
+        lista.innerHTML = "<p>Nenhum alerta.</p>";
+    } else {
+        estacao.historico.slice(0, 5).forEach(alerta=>{
+            const card = document.createElement("div");
+            card.className = "alerta-card";
+            card.innerHTML = `
+                <strong>${alerta.horario}</strong><br>
+                ${alerta.mensagem}
+            `;
+            lista.appendChild(card);
+        });
+    }
 }
 
 function atualizarBadges(){
@@ -186,6 +184,9 @@ function atualizarBadges(){
             badge.style.display = "flex";
         } else {
             badge.style.display = "none";
+        }
+        if (estacao.marcador && estacao.marcador.getPopup()) {
+            estacao.marcador.setPopupContent(`<b>${estacao.nome}</b><br>Alertas ativos: ${estacao.alertas}`);
         }
     });
 }
@@ -296,55 +297,26 @@ function obterNivelAlerta(sensor){
     }
 }
 
+function obterValorAlerta(mensagem) {
+    const numero = mensagem.match(/[-+]?[0-9]*\.?[0-9]+/);
+    return numero ? numero[0] : null;
+}
+
+function obterLimiteAlerta(mensagem) {
+    const limiar = mensagem.match(/limiar:\s*([0-9]+\.?[0-9]*)/i);
+    return limiar ? limiar[1] : null;
+}
+
 // ESTA FUNÇÃO PERMANECE COM MQTT, mas o chamador muda.
 function registrarAlerta(dados) {
- 
-    const idColuna = "col-" + dados.estacao.replace(/\s+/g, '-').toLowerCase();
-    let coluna = document.getElementById(idColuna);
- 
-    if (!coluna) {
-        coluna = document.createElement("div");
-        coluna.className = "coluna-estacao";
-        coluna.id = idColuna;
- 
-        const titulo = document.createElement("div");
-        titulo.className = "coluna-titulo";
-        titulo.textContent = dados.estacao;
-        coluna.appendChild(titulo);
- 
-        const lista = document.getElementById("lista-alertas").appendChild(coluna);
-    }
-
-    const card  = document.createElement("div");
-    card.className = "alerta-card";
- 
     const agora      = new Date();
     const data       = agora.toLocaleDateString('pt-BR');
     const hora       = agora.toLocaleTimeString('pt-BR');
     const timestamp  = `${data} — ${hora}`;
- 
-    card.innerHTML = `
-        <div class="alerta-estacao">${dados.estacao}</div>
-        <div class="alerta-mensagem">
-            Sensor ${dados.sensor}: ${dados.mensagem}
-        </div>
-        <div class="alerta-timestamp">${timestamp}</div>
-    `;
- 
-    const primeiroCard = coluna.querySelector(".alerta-card");
-    if (primeiroCard) {
-        coluna.insertBefore(card, primeiroCard);
-    } else {
-        coluna.appendChild(card);
-    }
- 
-    // Atualiza o badge, ocultado automaticamente quando o usuário abre a aba.
-    contadorAlertas++;
-    const badge = document.getElementById("badge-alertas");
-    if (badge) {badge.textContent = contadorAlertas; badge.style.display = "flex";}
 
     const estacao = ESTACOES.find(e => e.nome === dados.estacao);
     if(!estacao) return;
+
     estacao.alertas++;
     estacao.historico.unshift({
         sensor: dados.sensor,
@@ -355,7 +327,12 @@ function registrarAlerta(dados) {
         mensagem: `Sensor ${dados.sensor}: ${dados.mensagem}`,
         horario: timestamp
     });
+
+    contadorAlertas++;
+    const badge = document.getElementById("badge-alertas");
+    if (badge) {badge.textContent = contadorAlertas; badge.style.display = "flex";}
     atualizarBadges();
+
     if(estacaoSelecionada && estacaoSelecionada.id === estacao.id){
         atualizarPainel(estacao);
     }
