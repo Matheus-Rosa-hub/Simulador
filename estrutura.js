@@ -482,7 +482,10 @@ function resetChartZoom(){
 
 setInterval(()=>{
     if(!sensorChart) return;
-    const tempo = Math.floor((Date.now() - graficoTempoInicio) / 1000);
+    const ultimoX = SERIES_CONFIG[0].initial.length > 0
+        ? (SERIES_CONFIG[0].initial.length - 1) * 5: 0;
+    const tempo = ultimoX + Math.ceil((Date.now() - graficoTempoInicio) / 1000);
+
     sensorChart.data.datasets.forEach((dataset, index)=>{
         const ultimo = dataset.data.length ? dataset.data[dataset.data.length - 1].y : null;
         dataset.data.push({ x: tempo, y: gerarValorProximo(SERIES_CONFIG[index], ultimo) });
