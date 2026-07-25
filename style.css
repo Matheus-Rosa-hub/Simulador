@@ -234,6 +234,28 @@ body {
     height:100%;
 }
 
+.chart-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.chart-btn {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 6px;
+    background: var(--cor-destaque);
+    color: white;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.chart-hint {
+    color: #d1d5db;
+    font-size: 13px;
+}
+
 /* ===== ALERTAS ===== */
 
 .station-badge{

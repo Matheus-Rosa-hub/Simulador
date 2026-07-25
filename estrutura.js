@@ -347,44 +347,123 @@ function iniciarSimulacaoAlertas() {
 
 // ANÁLISE GRÁFICA
 let sensorChart;
+let graficoTempoInicio = null;
+
 function iniciarGrafico(){
     const canvas = document.getElementById("sensorChart");
     if(!canvas || sensorChart) return;
+    graficoTempoInicio = Date.now();
+    Chart.register(ChartZoom);
+
     sensorChart = new Chart(canvas,{
         type:"line",
         data:{
-            labels:["00s","04s","08s","12s","16s","20s"], //Eixo X (horário)
             datasets:[
                 {
                     label:"Temperatura",
-                    data:[20,22,24,27,26,22] //Eixo Y (dados)
+                    borderColor: '#3b82f6',
+                    backgroundColor: 'rgba(59,130,246,0.15)',
+                    data: [
+                        {x:0, y:20},
+                        {x:5, y:22},
+                        {x:10, y:24},
+                        {x:15, y:27},
+                        {x:20, y:26},
+                        {x:25, y:22}
+                    ]
                 },
 
                 {
                     label:"Umidade",
-                    data:[88,83,76,71,69,80] //Eixo Y (dados)
+                    borderColor: '#10b981',
+                    backgroundColor: 'rgba(16,185,129,0.15)',
+                    data: [
+                        {x:0, y:88},
+                        {x:5, y:83},
+                        {x:10, y:76},
+                        {x:15, y:71},
+                        {x:20, y:69},
+                        {x:25, y:80}
+                    ]
                 },
 
                 {
                     label:"Pluviometria",
-                    data:[3,5,2,0,0,6] //Eixo Y (dados)
+                    borderColor: '#f59e0b',
+                    backgroundColor: 'rgba(245,158,11,0.15)',
+                    data: [
+                        {x:0, y:3},
+                        {x:5, y:5},
+                        {x:10, y:2},
+                        {x:15, y:0},
+                        {x:20, y:0},
+                        {x:25, y:6}
+                    ]
                 },
 
                 {
                     label:"Velocidade do vento",
-                    data:[5,12,18,16,10,7] //Eixo Y (dados)
+                    borderColor: '#ef4444',
+                    backgroundColor: 'rgba(239,68,68,0.15)',
+                    data: [
+                        {x:0, y:5},
+                        {x:5, y:12},
+                        {x:10, y:18},
+                        {x:15, y:16},
+                        {x:20, y:10},
+                        {x:25, y:7}
+                    ]
                 },
 
                 {
                     label:"Nível do rio",
-                    data:[1.20,1.22,1.25,1.26,1.24,1.21] //Eixo Y (dados)
+                    borderColor: '#8b5cf6',
+                    backgroundColor: 'rgba(139,92,246,0.15)',
+                    data: [
+                        {x:0, y:1.20},
+                        {x:5, y:1.22},
+                        {x:10, y:1.25},
+                        {x:15, y:1.26},
+                        {x:20, y:1.24},
+                        {x:25, y:1.21}
+                    ]
                 }
             ]
         },
 
         options:{
             responsive:true,
-            maintainAspectRatio:false
+            maintainAspectRatio:false,
+            scales: {
+                x: {
+                    type: 'linear',
+                    min: 0,
+                    title: { display: true, text: 'Tempo (s)' },
+                    ticks: {
+                        callback: value => `${value}s`
+                    }
+                },
+                y: {
+                    title: { display: true, text: 'Valor' }
+                }
+            },
+            plugins: {
+                legend: { position: 'top' },
+                zoom: {
+                    zoom: {
+                        wheel: { enabled: true },
+                        pinch: { enabled: true },
+                        mode: 'x'
+                    },
+                    pan: {
+                        enabled: true,
+                        mode: 'x'
+                    },
+                    limits: {
+                        x: { min: 0 }
+                    }
+                }
+            }
         }
     });
 }
@@ -395,11 +474,16 @@ function toggleDataset(indice){
     sensorChart.update();
 }
 
+function resetChartZoom(){
+    if(!sensorChart) return;
+    sensorChart.resetZoom();
+}
+
 setInterval(()=>{
     if(!sensorChart) return;
+    const tempo = Math.floor((Date.now() - graficoTempoInicio) / 1000);
     sensorChart.data.datasets.forEach(dataset=>{
-        dataset.data.shift();
-        dataset.data.push(Math.floor(Math.random()*40)); //estacao.alertas = mensagemMQTT.alertas;
+        dataset.data.push({ x: tempo, y: Number((Math.random() * 40).toFixed(2)) });
     });
     sensorChart.update();
 },5000);

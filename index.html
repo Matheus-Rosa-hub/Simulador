@@ -107,6 +107,9 @@
                 </div>
 
                 <div class="analysis-chart">
+                    <div class="chart-controls">
+                        <button class="chart-btn" onclick="resetChartZoom()">Reset Zoom</button>
+                    </div>
                     <canvas id="sensorChart"></canvas>
                 </div>
                 
@@ -172,6 +175,7 @@
 
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
     <script src="estrutura.js"></script> 
 
 </body>
