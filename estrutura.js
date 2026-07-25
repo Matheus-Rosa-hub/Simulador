@@ -529,117 +529,44 @@ const CORES_REDE = {
     sem_conexao: '#ef4444'
 };
  
-function svgEl(tag, attrs) {
-    const e = document.createElementNS('http://www.w3.org/2000/svg', tag);
-    Object.entries(attrs).forEach(([k, v]) => e.setAttribute(k, v));
-    return e;
-}
- 
 function qualidadeEstacao(id) {
     const cx = REDE_CONEXOES.filter(c => c.de === id || c.para === id);
     if (cx.some(c => c.qualidade === 'estavel'))  return 'estavel';
     if (cx.some(c => c.qualidade === 'instavel')) return 'instavel';
     return 'sem_conexao';
 }
- 
-function calcularPosicoes(W, H) {
-    const cx = W / 2, cy = H / 2;
-    const rx = Math.min(W * 0.35, 220);
-    const ry = Math.min(H * 0.38, 170);
-    const n  = REDE_ESTACOES.length;
- 
-    return REDE_ESTACOES.map((est, i) => ({
-        ...est,
-        x: cx + rx * Math.cos((2 * Math.PI * i / n) - Math.PI / 2),
-        y: cy + ry * Math.sin((2 * Math.PI * i / n) - Math.PI / 2)
-    }));
-}
- 
-function desenharEstacaoSVG(svg, x, y, id, qualidade) {
-    const cor = CORES_REDE[qualidade] || '#9ca3af';
-    const g   = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    const ic  = '#374151';
- 
-    function lin(x1, y1, x2, y2) {
-        g.appendChild(svgEl('line', { x1, y1, x2, y2, stroke: ic, 'stroke-width': 1.8, 'stroke-linecap': 'round' }));
-    }
- 
-    g.appendChild(svgEl('rect', {
-        x: x-28, y: y-28, width: 56, height: 50, rx: 6,
-        fill: '#f9fafb', stroke: cor, 'stroke-width': 2.5
-    }));
- 
-    lin(x, y-26, x, y-21);
-    lin(x-14, y-21, x+14, y-21);
-    lin(x-14, y-21, x-14, y-25);  lin(x-14, y-25, x-10, y-25);
-    lin(x+14, y-21, x+14, y-25);  lin(x+10, y-25, x+14, y-25);
-    lin(x, y-21, x, y+2);
 
-    g.appendChild(svgEl('rect', {
-        x: x-6, y: y-11, width: 12, height: 10, rx: 1,
-        stroke: ic, 'stroke-width': 1.8, fill: '#e5e7eb'
-    }));
- 
-    [-18, -11, -4].forEach(dy => {
-        lin(x-22, y+dy,   x-14, y+dy);
-        lin(x-18, y+dy-3, x-18, y+dy+3);
-    });
- 
-    g.appendChild(svgEl('rect', {
-        x: x+11, y: y-17, width: 9, height: 8, rx: 1,
-        stroke: ic, 'stroke-width': 1.8, fill: 'none'
-    }));
- 
-    lin(x, y+2, x-14, y+19);
-    lin(x, y+2, x+14, y+19);
-    lin(x, y+2, x,    y+19);
- 
-    const lbl = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    lbl.setAttribute('x',           x);
-    lbl.setAttribute('y',           y + 34);
-    lbl.setAttribute('text-anchor', 'middle');
-    lbl.setAttribute('font-size',   '11');
-    lbl.setAttribute('font-weight', 'bold');
-    lbl.setAttribute('fill',        'white');
-    lbl.textContent = id;
-    g.appendChild(lbl);
- 
-    svg.appendChild(g);
+function obterDadosEstacao(id) {
+    return ESTACOES.find(est => est.nome === id) || { latitude: '-', longitude: '-' };
 }
- 
+
 function renderizarDiagnostico() {
-    const svg = document.getElementById("rede-svg");
-    if (!svg || !svg.parentElement) return;
- 
-    const W = svg.parentElement.clientWidth  || 800;
-    const H = svg.parentElement.clientHeight || 500;
- 
-    svg.setAttribute('width',   W);
-    svg.setAttribute('height',  H);
-    svg.setAttribute('viewBox', `0 0 ${W} ${H}`);
-    svg.innerHTML = '';
- 
-    const pos = calcularPosicoes(W, H);
-    const map = Object.fromEntries(pos.map(p => [p.id, p]));
- 
-    // Desenha 5 dots ao longo de cada caminho de conexão
-    REDE_CONEXOES.forEach(({ de, para, qualidade }) => {
-        const A = map[de], B = map[para];
-        if (!A || !B) return;
-        const cor = CORES_REDE[qualidade] || CORES_REDE.sem_conexao;
- 
-        for (let i = 1; i <= 5; i++) {
-            const t = i / 6;
-            svg.appendChild(svgEl('circle', {
-                cx:   A.x + (B.x - A.x) * t,
-                cy:   A.y + (B.y - A.y) * t,
-                r:    6,
-                fill: cor
-            }));
-        }
+    const container = document.getElementById('rede-cards');
+    if (!container) return;
+
+    container.innerHTML = '';
+    REDE_ESTACOES.forEach(estacao => {
+        const qualidade = qualidadeEstacao(estacao.id);
+        const dados = obterDadosEstacao(estacao.id);
+        const card = document.createElement('div');
+        card.className = 'rede-card';
+        card.innerHTML = `
+            <div class="rede-card-header">
+                <div class="rede-card-icon">
+                    <svg viewBox="0 0 24 24"><path d="M4 5a2 2 0 0 1 2-2h2v2H6v14h12V5h-2V3h2a2 2 0 0 1 2 2v6h-2V7H6v12h12v-4h2v4a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5Zm4 6h8v2H8v-2Zm0-4h8v2H8V7Zm0 8h5v2H8v-2Z"/></svg>
+                </div>
+                <div class="rede-card-title">${estacao.id}</div>
+                <span class="status-badge status-${qualidade}">${qualidade.replace('_',' ')}</span>
+            </div>
+            <div class="rede-card-body">
+                <div class="rede-card-row"><strong>Qualidade da Comunicação:</strong><span>${qualidade === 'estavel' ? 'Estável' : qualidade === 'instavel' ? 'Instável' : 'Sem conexão'}</span></div>
+                <div class="rede-card-row"><strong>Latitude:</strong><span>${dados.latitude}</span></div>
+                <div class="rede-card-row"><strong>Longitude:</strong><span>${dados.longitude}</span></div>
+                <div class="rede-card-row"><strong>Atualizado:</strong><span>${new Date().toLocaleDateString('pt-BR')}</span></div>
+            </div>
+        `;
+        container.appendChild(card);
     });
- 
-    pos.forEach(({ id, x, y }) => desenharEstacaoSVG(svg, x, y, id, qualidadeEstacao(id)));
 }
  
 function simularVariacaoRede(qualidade) {
