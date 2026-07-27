@@ -669,7 +669,7 @@ function salvarRelatorio() {
 }
 
 // INTEGRAÇÃO GERAL
-/* MQTT: FLUXO DE CONEXÃO RECOMENDADO
+/* MQTT:
  * 1. Ao carregar index.html, após checkAuth(), instanciar cliente MQTT.
  * 2. Conectar ao IP do broker
  * 3. Inscrever em tópicos principais
