@@ -79,8 +79,8 @@ function openTab(tabId, event) {
 let mapa;
 let estacaoSelecionada = null;
 
-// Marcador de exemplo da primeira estação ARGOS.
-// Futuramente, este marcador virá dos dados do broker MQTT.
+// MQTT: Substituir por dados do broker (tópico: 'argos/estacoes').
+// Exemplo de listener: cliente.subscribe('argos/estacoes'); cliente.on('message', (t, p) => { ESTACOES = JSON.parse(p); });
 const ESTACOES = [
 
     {
@@ -444,7 +444,7 @@ function iniciarGrafico(){
                 }
             },
             plugins: {
-                legend: { position: 'top' },
+                legend: { display: false }, // MQTT: Manter oculto — dados virão do broker em tempo real
                 tooltip: {
                     callbacks: {
                         title: items => items.length ? `Tempo: ${items[0].parsed.x}s` : '',
@@ -480,6 +480,7 @@ function resetChartZoom(){
     sensorChart.resetZoom();
 }
 
+// Substituir setInterval do gráfico
 setInterval(()=>{
     if(!sensorChart) return;
     const ultimoX = SERIES_CONFIG[0].initial.length > 0
@@ -494,15 +495,19 @@ setInterval(()=>{
 },5000);
 
 // DIAGNÓSTICO DE REDE
-
-/* SUBSTITUIR: REDE_ESTACOES e REDE_CONEXOES virão do MQTT.
- * renderizarDiagnostico() e desenharEstacaoSVG() não precisam ser alteradas.
+/* MQTT
+ * 1. REDE_ESTACOES e REDE_CONEXOES: Substituir
+ * 2. simularVariacaoRede() e setInterval em iniciarDiagnostico(): Remover
  *
  * Exemplo com MQTT:
  *   cliente.on('message', (topico, payload) => {
- *       const { de, para, qualidade } = JSON.parse(payload.toString());
- *       const con = REDE_CONEXOES.find(c => c.de === de && c.para === para);
- *       if (con) con.qualidade = qualidade; else REDE_CONEXOES.push({ de, para, qualidade });
+ *       if (topico.includes('estacoes')) {
+ *           REDE_ESTACOES = JSON.parse(payload);
+ *       } else if (topico.includes('conexoes')) {
+ *           const { de, para, qualidade } = JSON.parse(payload);
+ *           const con = REDE_CONEXOES.find(c => c.de === de && c.para === para);
+ *           if (con) con.qualidade = qualidade;
+ *       }
  *       renderizarDiagnostico();
  *   });
  */
@@ -589,7 +594,7 @@ function iniciarDiagnostico() {
     window.addEventListener('resize', renderizarDiagnostico);
     let ciclo = 0;
  
-    //SUBSTITUIR: intervalo e dados simulados serão removidos quando MQTT fornecer conectividade real
+    // Remover o setInterval abaixo
     setInterval(() => {
         ciclo++;
         REDE_CONEXOES.forEach(con => {
@@ -617,7 +622,7 @@ function limparFormulario() {
 }
 
 function salvarRelatorio() {
-
+    // MQTT: Adicionar publicação para broker
     const nome          = document.getElementById("nome").value;
     const instituicao   = document.getElementById("instituicao").value;
     const situacao      = document.getElementById("situacao").value;
@@ -663,12 +668,19 @@ function salvarRelatorio() {
     fecharRelatorio();
 }
 
-// INTEGRAÇÃO GERAL 
+// INTEGRAÇÃO GERAL
+/* MQTT: FLUXO DE CONEXÃO RECOMENDADO
+ * 1. Ao carregar index.html, após checkAuth(), instanciar cliente MQTT.
+ * 2. Conectar ao IP do broker
+ * 3. Inscrever em tópicos principais
+ * 4. Realizar remoções
+ * 5. Manter funções de renderização (iniciarMapa, iniciarGrafico, renderizarDiagnostico)
+ */
 window.addEventListener("load", () => {
     if(!document.getElementById("map-page")) return;
     checkAuth();
     iniciarMapa();
     iniciarGrafico();
     iniciarDiagnostico();
-    iniciarSimulacaoAlertas();
+    iniciarSimulacaoAlertas(); // Remover esta linha quando broker estiver ativo.
 });
