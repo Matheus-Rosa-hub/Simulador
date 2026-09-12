@@ -21,6 +21,13 @@
 
   const STORAGE_KEY = "climate-station-state";
   const stationSwitch = document.getElementById("station-switch");
+  const SERIAL_BAUD_RATE = 115200;
+  const TRANSMISSION_INTERVAL = 5000;
+  let serialPort = null;
+  let transmissionTimer = null;
+  let serialWriteQueue = Promise.resolve();
+  let connectionAttempted = false;
+  let connectionPromise = null;
 
   function loadState() {
     try {
@@ -42,6 +49,77 @@
   function saveState() {
     const sensors = Object.fromEntries(Object.entries(state.sensors).map(([key, sensor]) => [key, sensor.value]));
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ ledEnabled: state.ledEnabled, sensors }));
+  }
+
+  function buildTelemetryFrame() {
+    return {
+      device_id: "Estação 001",
+      timestamp: new Date().toISOString(),
+      led: state.ledEnabled,
+      sensors: Object.fromEntries(Object.entries(state.sensors).map(([key, sensor]) => [key, Number(fmt(sensor.value, sensor.step))])),
+    };
+  }
+
+  function stopSerialTransmission() {
+    if (transmissionTimer !== null) {
+      clearInterval(transmissionTimer);
+      transmissionTimer = null;
+    }
+  }
+
+  function reportSerialError(error) {
+    console.error("[climate-telemetry] falha na transmissão serial:", error);
+    stopSerialTransmission();
+    serialPort = null;
+    stationSwitch.title = "Conectar ao ESP32 via USB-serial";
+  }
+
+  function sendTelemetryFrame() {
+    if (!serialPort?.writable) return;
+    const payload = `${JSON.stringify(buildTelemetryFrame())}\n`;
+    serialWriteQueue = serialWriteQueue
+      .then(async () => {
+        if (!serialPort?.writable) return;
+        const writer = serialPort.writable.getWriter();
+        try {
+          await writer.write(new TextEncoder().encode(payload));
+        } finally {
+          writer.releaseLock();
+        }
+      })
+      .catch(reportSerialError);
+  }
+
+  async function connectSerial() {
+    if (serialPort?.writable) return true;
+    if (connectionAttempted) return false;
+    if (connectionPromise) return connectionPromise;
+
+    connectionAttempted = true;
+    if (!("serial" in navigator)) {
+      alert("A Web Serial API não está disponível neste navegador. Use Google Chrome ou Microsoft Edge em localhost ou HTTPS.");
+      return false;
+    }
+
+    connectionPromise = (async () => {
+      try {
+        const authorizedPorts = await navigator.serial.getPorts();
+        serialPort = authorizedPorts[0] || await navigator.serial.requestPort();
+        await serialPort.open({ baudRate: SERIAL_BAUD_RATE });
+        stationSwitch.title = "Conectado ao ESP32. Clique para alterar o estado do LED.";
+        sendTelemetryFrame();
+        transmissionTimer = setInterval(sendTelemetryFrame, TRANSMISSION_INTERVAL);
+        return true;
+      } catch (error) {
+        serialPort = null;
+        if (error.name !== "NotFoundError") reportSerialError(error);
+        return false;
+      } finally {
+        connectionPromise = null;
+      }
+    })();
+
+    return connectionPromise;
   }
  
   const SCENARIOS = {
@@ -114,10 +192,18 @@
     stationSwitch.setAttribute("aria-checked", String(state.ledEnabled));
   }
 
-  function toggleStation() {
+  async function toggleStation() {
     state.ledEnabled = !state.ledEnabled;
     updateStationControls();
     saveState();
+
+    if (serialPort) {
+      sendTelemetryFrame();
+      return;
+    }
+
+    // A conexão é opcional: o estado local muda mesmo sem um ESP32 conectado.
+    if (!connectionAttempted) await connectSerial();
   }
  
   function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
