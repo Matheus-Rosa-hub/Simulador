@@ -21,12 +21,12 @@
 
   const STORAGE_KEY = "climate-station-state";
   const stationSwitch = document.getElementById("station-switch");
+  const serialStatus = document.getElementById("serial-status");
   const SERIAL_BAUD_RATE = 115200;
   const TRANSMISSION_INTERVAL = 5000;
   let serialPort = null;
   let transmissionTimer = null;
   let serialWriteQueue = Promise.resolve();
-  let connectionAttempted = false;
   let connectionPromise = null;
 
   function loadState() {
@@ -71,7 +71,19 @@
     console.error("[climate-telemetry] falha na transmissão serial:", error);
     stopSerialTransmission();
     serialPort = null;
-    stationSwitch.title = "Conectar ao ESP32 via USB-serial";
+    updateSerialStatus("Falha na conexão", "error");
+  }
+
+  function updateSerialStatus(message, kind = "idle") {
+    serialStatus.textContent = message;
+    serialStatus.className = `serial-status ${kind}`;
+  }
+
+  function handleSerialDisconnect(event) {
+    if (event.target !== serialPort) return;
+    stopSerialTransmission();
+    serialPort = null;
+    updateSerialStatus("ESP32 desconectado", "error");
   }
 
   function sendTelemetryFrame() {
@@ -92,27 +104,34 @@
 
   async function connectSerial() {
     if (serialPort?.writable) return true;
-    if (connectionAttempted) return false;
     if (connectionPromise) return connectionPromise;
 
-    connectionAttempted = true;
     if (!("serial" in navigator)) {
-      alert("A Web Serial API não está disponível neste navegador. Use Google Chrome ou Microsoft Edge em localhost ou HTTPS.");
+      updateSerialStatus("Web Serial indisponível", "error");
       return false;
     }
 
+    updateSerialStatus("Aguardando porta...", "pending");
     connectionPromise = (async () => {
       try {
         const authorizedPorts = await navigator.serial.getPorts();
-        serialPort = authorizedPorts[0] || await navigator.serial.requestPort();
+        if (authorizedPorts.length === 0) {
+          updateSerialStatus("Aguardando autorização", "pending");
+          return false;
+        }
+        serialPort = authorizedPorts[0];
         await serialPort.open({ baudRate: SERIAL_BAUD_RATE });
-        stationSwitch.title = "Conectado ao ESP32. Clique para alterar o estado do LED.";
+        serialPort.addEventListener("disconnect", handleSerialDisconnect);
+        updateSerialStatus("Conectado", "connected");
         sendTelemetryFrame();
-        transmissionTimer = setInterval(sendTelemetryFrame, TRANSMISSION_INTERVAL);
+        if (transmissionTimer === null) {
+          transmissionTimer = setInterval(sendTelemetryFrame, TRANSMISSION_INTERVAL);
+        }
         return true;
       } catch (error) {
         serialPort = null;
-        if (error.name !== "NotFoundError") reportSerialError(error);
+        if (error.name === "NotFoundError") updateSerialStatus("Conexão cancelada", "idle");
+        else reportSerialError(error);
         return false;
       } finally {
         connectionPromise = null;
@@ -185,6 +204,7 @@
       sliderEl.style.setProperty("--pct", pct(s) + "%");
     }
     saveState();
+    sendTelemetryFrame();
   }
 
   function updateStationControls() {
@@ -201,9 +221,6 @@
       sendTelemetryFrame();
       return;
     }
-
-    // A conexão é opcional: o estado local muda mesmo sem um ESP32 conectado.
-    if (!connectionAttempted) await connectSerial();
   }
  
   function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
@@ -230,6 +247,13 @@
  
   document.querySelectorAll(".btn-scenario").forEach(btn => btn.addEventListener("click", () => applyScenario(btn.dataset.scenario)));
   stationSwitch.addEventListener("click", toggleStation);
+  if ("serial" in navigator) {
+    navigator.serial.addEventListener("disconnect", handleSerialDisconnect);
+    navigator.serial.addEventListener("connect", connectSerial);
+    connectSerial();
+  } else {
+    updateSerialStatus("Web Serial indisponível", "error");
+  }
  
   loadState();
   renderSensorGrid();

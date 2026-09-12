@@ -38,16 +38,23 @@
             <h2>Cenários rápidos</h2>
           </div>
         </div>
-        <div class="scenario-buttons">
-          <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
-          <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
-          <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
-        </div>
-        <div class="station-control">
-          <span class="station-control-label">Ligar/Desligar</span>
-          <button class="station-switch is-on" id="station-switch" type="button" role="switch" aria-checked="true" aria-label="Ligar ou desligar o LED">
-            <span class="station-switch-track"><span class="station-switch-thumb"></span></span>
-          </button>
+        <div class="scenario-footer">
+          <div class="scenario-buttons">
+            <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
+            <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
+            <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
+          </div>
+          <div class="station-control">
+            <div class="serial-control">
+              <span class="serial-status" id="serial-status" role="status" aria-live="polite">Não conectado</span>
+            </div>
+            <div class="led-control">
+              <span class="station-control-label">Ligar/Desligar</span>
+              <button class="station-switch is-on" id="station-switch" type="button" role="switch" aria-checked="true" aria-label="Ligar ou desligar o LED">
+                <span class="station-switch-track"><span class="station-switch-thumb"></span></span>
+              </button>
+            </div>
+          </div>
         </div>
       </section>
     </div>
