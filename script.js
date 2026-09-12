@@ -1,4 +1,4 @@
-// ---------- Ícones (SVG genéricos, sem dependência externa) ----------
+//Ícones
   const ICONS = {
     thermometer: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M13 15.5V5a1.5 1.5 0 0 0-3 0v10.5a4 4 0 1 0 3 0Z"/><circle cx="11.5" cy="17.5" r="1.4" fill="currentColor" stroke="none"/></svg>`,
     droplet: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c3.2 3.6 6 7.4 6 10.8A6 6 0 0 1 6 13.8C6 10.4 8.8 6.6 12 3Z"/></svg>`,
@@ -8,7 +8,7 @@
  
   const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
  
-  // ---------- Estado ----------
+  //Estados
   const state = {
     ledEnabled: true,
     sensors: {

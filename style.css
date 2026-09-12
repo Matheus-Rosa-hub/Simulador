@@ -39,7 +39,7 @@
  
   :focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
  
-  /* ---------- Header ---------- */
+  /* Cabeçalhos */
   .eyebrow {
     font-family: var(--mono); font-size: 11px; letter-spacing: .08em;
     color: var(--text-tertiary); text-transform: uppercase;
@@ -50,7 +50,7 @@
   }
   h1 { font-size: 30px; font-weight: 700; letter-spacing: -0.01em; margin: 0; }
   .header-titles p { color: var(--text-secondary); font-size: 13.5px; margin: 6px 0 0; max-width: 58ch; }
-  /* ---------- Buttons ---------- */
+
   .btn {
     font-family: var(--sans); font-size: 13.5px; font-weight: 600;
     padding: 10px 16px; border-radius: 10px; border: 1px solid var(--border);
@@ -60,7 +60,6 @@
   .btn:hover { border-color: var(--text-tertiary); }
   .btn:active { transform: scale(0.98); }
  
-  /* ---------- Icon badges ---------- */
   .icon-badge {
     display: inline-flex; align-items: center; justify-content: center;
     width: 34px; height: 34px; border-radius: 10px; flex-shrink: 0;
@@ -71,7 +70,6 @@
   .icon-badge.blue { background: var(--blue-dim); color: var(--blue); }
   .icon-badge.violet { background: var(--violet-dim); color: var(--violet); }
  
-  /* ---------- Section headers ---------- */
   .section-header { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; flex-wrap: wrap; }
   .section-header h2 { font-size: 16px; margin: 0; }
   .section-header p { color: var(--text-tertiary); font-size: 12.5px; margin: 4px 0 0; }
@@ -88,7 +86,6 @@
   .badge-pill.blue { color: var(--blue); border-color: var(--blue-border); background: var(--blue-dim); }
   .badge-pill.violet { color: var(--violet); border-color: var(--violet-border); background: var(--violet-dim); }
  
-  /* ---------- Main grid ---------- */
   .main-grid { display: grid; grid-template-columns: 1fr; gap: 20px; margin-top: 26px; align-items: start; }
   .sensor-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-top: 18px; }
  
@@ -134,7 +131,7 @@
     font-family: var(--mono); font-size: 10px; color: var(--text-tertiary); letter-spacing: .03em; text-transform: uppercase;
   }
  
-  /* ---------- Scenarios ---------- */
+  /* Cenários */
   .scenarios-section { position: relative; min-height: 84px; margin-top: 24px; }
   .scenario-buttons { display: flex; gap: 10px; margin-top: 14px; padding-right: 180px; flex-wrap: wrap; }
   .station-control {

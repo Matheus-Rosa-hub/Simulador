@@ -1,59 +1,57 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Simulador de Estação — Climate Telemetry</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
- 
-  <header class="page-header">
-    <div class="eyebrow">ANÁLISE CLIMÁTICA E AMBIENTAL</div>
-    <div class="header-row">
-      <div class="header-titles">
-        <h1>Estação Meteorológica</h1>
-        <p>Ajuste os dados climáticos.</p>
-      </div>
-    </div>
-  </header>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Simulador de Estação — Climate Telemetry</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+  </head>
 
-  <div class="main-grid">
-    <section class="sensors-section">
-      <div class="section-header">
-        <div>
-          <h2>Sensoreamento do Clima</h2>
+  <body>
+    <div class="container">
+      <header class="page-header">
+        <div class="eyebrow">ANÁLISE CLIMÁTICA E AMBIENTAL</div>
+        <div class="header-row">
+          <div class="header-titles">
+            <h1>Estação Meteorológica</h1>
+            <p>Ajuste os dados climáticos.</p>
+          </div>
         </div>
+      </header>
+
+      <div class="main-grid">
+        <section class="sensors-section">
+          <div class="section-header">
+            <div>
+              <h2>Sensoreamento do Clima</h2>
+            </div>
+          </div>
+          <div class="sensor-grid" id="sensor-grid"></div>
+        </section>
       </div>
-      <div class="sensor-grid" id="sensor-grid"></div>
-    </section>
- 
-  </div>
- 
-  <section class="scenarios-section">
-    <div class="section-header">
-      <div>
-        <h2>Cenários rápidos</h2>
-      </div>
+    
+      <section class="scenarios-section">
+        <div class="section-header">
+          <div>
+            <h2>Cenários rápidos</h2>
+          </div>
+        </div>
+        <div class="scenario-buttons">
+          <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
+          <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
+          <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
+        </div>
+        <div class="station-control">
+          <span class="station-control-label">Ligar/Desligar</span>
+          <button class="station-switch is-on" id="station-switch" type="button" role="switch" aria-checked="true" aria-label="Ligar ou desligar o LED">
+            <span class="station-switch-track"><span class="station-switch-thumb"></span></span>
+          </button>
+        </div>
+      </section>
     </div>
-    <div class="scenario-buttons">
-      <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
-      <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
-      <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
-    </div>
-    <div class="station-control">
-      <span class="station-control-label">Ligar/Desligar</span>
-      <button class="station-switch is-on" id="station-switch" type="button" role="switch" aria-checked="true" aria-label="Ligar ou desligar o LED">
-        <span class="station-switch-track"><span class="station-switch-thumb"></span></span>
-      </button>
-    </div>
-  </section>
- 
-</div>
- 
-<script src="script.js"></script>
-</body>
+    
+    <script src="script.js"></script>
+  </body>
 </html>
