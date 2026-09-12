@@ -27,8 +27,6 @@
         <div>
           <h2>Sensoreamento do Clima</h2>
         </div>
-        <span class="badge-pill" id="channel-count">4 canais ativos</span>
-        <p class="section-description">Temperatura, Umidade, Pluviometria e Nível do Rio</p>
       </div>
       <div class="sensor-grid" id="sensor-grid"></div>
     </section>
@@ -45,6 +43,12 @@
       <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
       <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
       <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
+    </div>
+    <div class="station-control">
+      <span class="station-control-label">Ligar/Desligar</span>
+      <button class="station-switch is-on" id="station-switch" type="button" role="switch" aria-checked="true" aria-label="Ligar ou desligar o LED">
+        <span class="station-switch-track"><span class="station-switch-thumb"></span></span>
+      </button>
     </div>
   </section>
  

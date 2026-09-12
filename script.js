@@ -10,6 +10,7 @@
  
   // ---------- Estado ----------
   const state = {
+    ledEnabled: true,
     sensors: {
       temperatura: { label: "Temperatura do ar", unit: "°C", min: -14, max: 45, step: 0.5, value: 22.5, accent: "amber", icon: "thermometer" },
       umidade:     { label: "Umidade relativa",  unit: "%",  min: 0,   max: 100, step: 1,   value: 72,   accent: "cyan",  icon: "droplet" },
@@ -17,6 +18,31 @@
       nivel_rio:   { label: "Nível do rio", unit: "m", min: 0, max: 15, step: 0.1, value: 2.4, accent: "violet", icon: "waves" },
     },
   };
+
+  const STORAGE_KEY = "climate-station-state";
+  const stationSwitch = document.getElementById("station-switch");
+
+  function loadState() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+      if (!saved) return;
+      if (typeof saved.ledEnabled === "boolean") state.ledEnabled = saved.ledEnabled;
+      else if (typeof saved.stationEnabled === "boolean") state.ledEnabled = saved.stationEnabled;
+      Object.entries(state.sensors).forEach(([key, sensor]) => {
+        const savedValue = saved.sensors?.[key];
+        if (typeof savedValue === "number" && Number.isFinite(savedValue)) {
+          sensor.value = Math.min(sensor.max, Math.max(sensor.min, savedValue));
+        }
+      });
+    } catch {
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }
+
+  function saveState() {
+    const sensors = Object.fromEntries(Object.entries(state.sensors).map(([key, sensor]) => [key, sensor.value]));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ledEnabled: state.ledEnabled, sensors }));
+  }
  
   const SCENARIOS = {
     normal:     { label: "Condição normal",   values: { temperatura: 22.5, umidade: 65, chuva: 8,   nivel_rio: 2.4 } },
@@ -25,8 +51,6 @@
   };
  
   const grid = document.getElementById("sensor-grid");
-  const channelCount = document.getElementById("channel-count");
- 
   function fmt(n, step) {
     const decimals = (String(step).split(".")[1] || "").length;
     return Number(n).toFixed(decimals);
@@ -55,7 +79,6 @@
             style="--accent: var(--${s.accent}); --pct: ${pct(s)}%;">
           <button class="step-btn" data-key="${key}" data-dir="1" aria-label="Aumentar ${s.label}">+</button>
         </div>
-        <div class="slider-meta"><span>MIN ${s.min}</span><span>STEP ${s.step}</span><span>MAX ${s.max}</span></div>
       </div>
     `).join("");
  
@@ -70,7 +93,7 @@
         setValue(key, s.value + dir * s.step, true);
       });
     });
-    channelCount.textContent = `${Object.keys(state.sensors).length} canais ativos`;
+    updateStationControls();
   }
  
   function setValue(key, value, syncSlider) {
@@ -83,6 +106,18 @@
       if (syncSlider) sliderEl.value = s.value;
       sliderEl.style.setProperty("--pct", pct(s) + "%");
     }
+    saveState();
+  }
+
+  function updateStationControls() {
+    stationSwitch.classList.toggle("is-on", state.ledEnabled);
+    stationSwitch.setAttribute("aria-checked", String(state.ledEnabled));
+  }
+
+  function toggleStation() {
+    state.ledEnabled = !state.ledEnabled;
+    updateStationControls();
+    saveState();
   }
  
   function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
@@ -108,6 +143,8 @@
   }
  
   document.querySelectorAll(".btn-scenario").forEach(btn => btn.addEventListener("click", () => applyScenario(btn.dataset.scenario)));
+  stationSwitch.addEventListener("click", toggleStation);
  
+  loadState();
   renderSensorGrid();
  

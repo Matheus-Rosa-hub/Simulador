@@ -135,12 +135,32 @@
   }
  
   /* ---------- Scenarios ---------- */
-  .scenarios-section { margin-top: 24px; }
-  .scenario-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+  .scenarios-section { position: relative; min-height: 84px; margin-top: 24px; }
+  .scenario-buttons { display: flex; gap: 10px; margin-top: 14px; padding-right: 180px; flex-wrap: wrap; }
+  .station-control {
+    position: absolute; right: 0; bottom: 0; display: flex; flex-direction: column;
+    align-items: center; gap: 10px; width: 120px;
+  }
+  .station-control-label { width: auto; font-size: 12px; font-weight: 600; color: var(--text-primary); text-align: center; white-space: nowrap; }
+  .station-switch { padding: 0; border: 0; background: transparent; cursor: pointer; }
+  .station-switch-track {
+    display: flex; align-items: center; width: 48px; height: 24px; padding: 3px;
+    border-radius: 999px; background: #555b63; transition: background .15s ease;
+  }
+  .station-switch-thumb {
+    width: 18px; height: 18px; border-radius: 50%; background: #eef1f6;
+    transform: translateX(0); transition: transform .15s ease;
+  }
+  .station-switch.is-on .station-switch-track { background: var(--green); }
+  .station-switch.is-on .station-switch-thumb { transform: translateX(24px); }
+  .station-switch:focus-visible { outline-offset: 4px; }
  
   @media (max-width: 640px) {
     .sensor-grid { grid-template-columns: 1fr; }
     .header-row { flex-direction: column; align-items: flex-start; }
+    .scenarios-section { min-height: 136px; }
+    .scenario-buttons { padding-right: 0; }
+    .station-control { position: static; margin-top: 18px; }
   }
   @media (prefers-reduced-motion: reduce) {
     input[type=range]::-webkit-slider-thumb, .btn { transition: none; }
