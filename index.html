@@ -1,182 +1,55 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8"> 
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Adapta ao tamanho da tela. -->
-    <title>ARGOS</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
-    <link rel="stylesheet" href="style.css"> <!-- Conecta o arquivo de estilos CSS. -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulador de Estação — Climate Telemetry</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-
 <body>
-
-    <div id="map-page" style="display:flex;"> 
-        <div class="navbar"> 
-            <button class="tab active"
-                    onclick="openTab('map', event)">
-                Mapa 
-            </button>
-
-            <button class="tab"
-                    onclick="openTab('analise', event)">
-                Análise Gráfica
-            </button>
-
-            <button class="tab"
-                    onclick="openTab('diagnostico', event)">
-                Diagnóstico de Rede
-            </button>
-
-            <button class="tab"
-                    onclick="openTab('relatorios', event)">
-                Relatórios 
-            </button>
-
-        </div>
-
-        <div id="map" class="content active-content">
-            <div id="mapa-regiao"></div>
-            <div id="painel-estacao" class="painel-estacao">
-                <h2 id="titulo-estacao">Nenhuma estação selecionada</h2>
-                <hr>
-                <p>
-                    <strong>Status:</strong>
-                    <span id="status-estacao">Normal</span>
-                </p>
-
-                <p>
-                    <strong>Alertas ativos:</strong>
-                    <span id="alertas-estacao">0</span>
-                </p>
-
-                <p>
-                    <strong>Última atualização:</strong>
-                    <span id="hora-estacao">--</span>
-                </p>
-
-                <h3>Eventos</h3>
-                <div id="lista-alertas">Nenhum alerta.</div>
-            </div>
-        </div>
-
-        <div id="analise" class="content">
-            <h1>Análise Gráfica</h1>
-            <div class="analysis-container">
-                <div class="analysis-sidebar">
-                    <h2>Variáveis</h2>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked
-                            onchange="toggleDataset(0)">
-                        Temperatura
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked
-                            onchange="toggleDataset(1)">
-                        Umidade
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked
-                            onchange="toggleDataset(2)">
-                        Pluviometria
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked
-                            onchange="toggleDataset(3)">
-                        Velocidade do Vento
-                    </label>
-
-                    <label>
-                        <input
-                            type="checkbox"
-                            checked
-                            onchange="toggleDataset(4)">
-                        Nível do Rio
-                    </label>
-                </div>
-
-                <div class="analysis-chart">
-                    <div class="chart-controls">
-                        <button class="chart-btn" onclick="resetChartZoom()">Reset Zoom</button>
-                    </div>
-                    <canvas id="sensorChart"></canvas>
-                </div>
-                
-            </div>
-        </div>
-
-        <div id="diagnostico" class="content">
-            <h1>Diagnóstico de Rede</h1>
-            <div id="rede-container">
-                <div id="rede-cards" class="rede-cards"></div>
-                <div id="rede-legenda">
-                    <div class="leg-item"><span class="leg-dot estavel"></span>Estável</div>
-                    <div class="leg-item"><span class="leg-dot instavel"></span>Instável</div>
-                    <div class="leg-item"><span class="leg-dot sem-conexao"></span>Sem conexão</div>
-                </div>
-            </div>
-        </div>
-
-        <div id="relatorios" class="content">
-            <h1>Relatórios</h1>
-            <div id="lista-relatorios"></div> 
-             <button
-                class="add-report-btn"
-                onclick="abrirRelatorio()">
-                + 
-             </button>
-        </div>
+<div class="container">
+ 
+  <header class="page-header">
+    <div class="eyebrow">ANÁLISE CLIMÁTICA E AMBIENTAL</div>
+    <div class="header-row">
+      <div class="header-titles">
+        <h1>Estação Meteorológica</h1>
+        <p>Ajuste os dados climáticos.</p>
+      </div>
     </div>
+  </header>
 
-        <div id="report-modal" class="modal">
-           <div class="report-window">
-                <div class="report-header">
-                   <button
-                    class="cancel-btn"
-                    onclick="fecharRelatorio()">
-                    Cancelar 
-                   </button>
-                </div>
-
-                <div class="report-body">
-                    <label>Nome:</label>
-                    <input type="text" id="nome" name="nome">
-
-                    <label>Instituição vinculada:</label>
-                    <input type="text" id="instituicao" name="instituicao">
-
-                    <label>Situação:</label>
-                    <input type="text" id="situacao" name="situacao">
-
-                    <label>Documentação:</label>
-                    <textarea id="documentacao" name="documentacao"></textarea>
-
-                    <div class="save-area">
-                        <button
-                            class="save-btn"
-                            onclick="salvarRelatorio()">
-                            Salvar 
-                        </button>
-                    </div>
-                </div>
-            </div>
+  <div class="main-grid">
+    <section class="sensors-section">
+      <div class="section-header">
+        <div>
+          <h2>Sensoreamento do Clima</h2>
         </div>
-
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js"></script>
-    <script src="estrutura.js"></script> 
-
+        <span class="badge-pill" id="channel-count">4 canais ativos</span>
+        <p class="section-description">Temperatura, Umidade, Pluviometria e Nível do Rio</p>
+      </div>
+      <div class="sensor-grid" id="sensor-grid"></div>
+    </section>
+ 
+  </div>
+ 
+  <section class="scenarios-section">
+    <div class="section-header">
+      <div>
+        <h2>Cenários rápidos</h2>
+      </div>
+    </div>
+    <div class="scenario-buttons">
+      <button class="btn btn-scenario" data-scenario="normal">Condição normal</button>
+      <button class="btn btn-scenario" data-scenario="tempestade">Tempestade severa</button>
+      <button class="btn btn-scenario" data-scenario="calor">Onda de calor</button>
+    </div>
+  </section>
+ 
+</div>
+ 
+<script src="script.js"></script>
 </body>
 </html>
