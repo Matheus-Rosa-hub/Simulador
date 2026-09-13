@@ -131,7 +131,6 @@ input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 
   font-family: var(--mono); font-size: 10px; color: var(--text-tertiary); letter-spacing: .03em; text-transform: uppercase;
 }
 
-/* Cenários */
 .scenarios-section { margin-top: 24px; }
 .scenario-footer { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-top: 14px; }
 .scenario-buttons { display: flex; gap: 10px; flex-wrap: wrap; }

@@ -77,6 +77,27 @@ function updateSerialStatus(message, kind = "idle") {
   serialStatus.className = `serial-status ${kind}`;
 }
 
+function setNeedsAuthorization(needsAuth) {
+  if (needsAuth) {
+    serialStatus.setAttribute("role", "button");
+    serialStatus.setAttribute("tabindex", "0");
+    updateSerialStatus("Autorizar Dispositivo?", "pending");
+  } else {
+    serialStatus.removeAttribute("role");
+    serialStatus.removeAttribute("tabindex");
+  }
+}
+
+async function authorizeDevice() {
+  try {
+    await navigator.serial.requestPort();
+    setNeedsAuthorization(false);
+    await connectSerial(); // getPorts() já vai encontrar essa porta a partir de agora
+  } catch (error) {
+    if (error.name !== "NotFoundError") reportSerialError(error);
+  }
+}
+
 function handleSerialDisconnect(event) {
   if (event.target !== serialPort) return;
   stopSerialTransmission();
@@ -132,42 +153,11 @@ async function connectSerial() {
       if (error.name === "NotFoundError") updateSerialStatus("Autorização cancelada", "idle");
       else reportSerialError(error);
       return false;
-    } finally {connectionPromise = null;}
+    } finally { connectionPromise = null; }
   })();
 
 return connectionPromise;
 }
-
-function setNeedsAuthorization(needsAuth) {
-  if (needsAuth) {
-    serialStatus.setAttribute("role", "button");
-    serialStatus.setAttribute("tabindex", "0");
-    updateSerialStatus("Clique para autorizar o USB (1x)", "pending");
-  } else {
-    serialStatus.removeAttribute("role");
-    serialStatus.removeAttribute("tabindex");
-  }
-}
-
-async function authorizeDevice() {
-  try {
-    await navigator.serial.requestPort();
-    setNeedsAuthorization(false);
-    await connectSerial(); // getPorts() já vai encontrar essa porta a partir de agora
-  } catch (error) {
-    if (error.name !== "NotFoundError") reportSerialError(error);
-  }
-}
-
-  serialStatus.addEventListener("click", () => {
-    if (serialStatus.getAttribute("role") === "button") authorizeDevice();
-  });
-  serialStatus.addEventListener("keydown", (e) => {
-    if (serialStatus.getAttribute("role") === "button" && (e.key === "Enter" || e.key === " ")) {
-      e.preventDefault();
-      authorizeDevice();
-    }
-  });
 
 const SCENARIOS = {
   normal:     { label: "Condição normal",   values: { temperatura: 22.5, umidade: 65, chuva: 8,   nivel_rio: 2.4 } },
@@ -275,6 +265,15 @@ function applyScenario(key) {
 
 document.querySelectorAll(".btn-scenario").forEach(btn => btn.addEventListener("click", () => applyScenario(btn.dataset.scenario)));
 stationSwitch.addEventListener("click", toggleStation);
+serialStatus.addEventListener("click", () => {
+    if (serialStatus.getAttribute("role") === "button") authorizeDevice();
+});
+serialStatus.addEventListener("keydown", (e) => {
+  if (serialStatus.getAttribute("role") === "button" && (e.key === "Enter" || e.key === " ")) {
+    e.preventDefault();
+    authorizeDevice();
+  }
+});
 if ("serial" in navigator) {
   navigator.serial.addEventListener("disconnect", handleSerialDisconnect);
   navigator.serial.addEventListener("connect", connectSerial);
