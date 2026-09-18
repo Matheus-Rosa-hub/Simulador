@@ -10,8 +10,8 @@ const REDUCE_MOTION = window.matchMedia("(prefers-reduced-motion: reduce)").matc
 const state = {
   ledEnabled: true,
   sensors: {
-    temperatura: { label: "Temperatura do ar", unit: "°C", min: -14, max: 45, step: 0.5, value: 22.5, accent: "amber", icon: "thermometer" },
-    umidade:     { label: "Umidade relativa",  unit: "%",  min: 0,   max: 100, step: 1,   value: 72,   accent: "cyan",  icon: "droplet" },
+    temperatura: { label: "Temperatura", unit: "°C", min: -14, max: 45, step: 0.5, value: 22.5, accent: "amber", icon: "thermometer" },
+    umidade:     { label: "Umidade",  unit: "%",  min: 0,   max: 100, step: 1,   value: 72,   accent: "cyan",  icon: "droplet" },
     chuva:       { label: "Volume de chuva acumulada", unit: "mm", min: 0, max: 250, step: 1, value: 12, accent: "blue", icon: "cloudRain" },
     nivel_rio:   { label: "Nível do rio", unit: "m", min: 0, max: 15, step: 0.1, value: 2.4, accent: "violet", icon: "waves" },
   },
