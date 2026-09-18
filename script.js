@@ -166,8 +166,8 @@ return connectionPromise;
 
 const SCENARIOS = {
   normal:     { label: "Condição normal",   values: { temperatura: 22.5, umidade: 65, chuva: 8,   nivel_rio: 2.4 } },
-  tempestade: { label: "Tempestade severa", values: { temperatura: 17,   umidade: 96, chuva: 210, nivel_rio: 11.8 } },
-  calor:      { label: "Onda de calor",     values: { temperatura: 41.5, umidade: 16, chuva: 0,   nivel_rio: 1.1 } },
+  tempestade: { label: "Tempestade severa", values: { temperatura: 17,   umidade: 96, chuva: 122, nivel_rio: 11.8 } },
+  calor:      { label: "Onda de calor",     values: { temperatura: 41.5, umidade: 32, chuva: 0,   nivel_rio: 2.7 } },
 };
 
 const grid = document.getElementById("sensor-grid");
