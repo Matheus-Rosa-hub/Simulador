@@ -49,6 +49,11 @@ function saveState() {
   localStorage.setItem(STORAGE_KEY, JSON.stringify({ ledEnabled: state.ledEnabled, sensors }));
 }
 
+function monitorSerial({ ledEnabled, sensors }) {
+  const { temperatura, umidade, chuva, nivel_rio } = sensors;
+  return `temperatura=${temperatura},umidade=${umidade},chuva_mm=${chuva},cota=${nivel_rio},ledEnable=${ledEnabled}`;
+}
+
 function buildTelemetryFrame() {
   return {
     device_id: "Estação 001",
@@ -107,7 +112,7 @@ function handleSerialDisconnect(event) {
 
 function sendTelemetryFrame() {
   if (!serialPort?.writable) return;
-  const payload = `${JSON.stringify(buildTelemetryFrame())}\n`;
+  const payload = `${monitorSerial(buildTelemetryFrame())}\n`;
   serialWriteQueue = serialWriteQueue
     .then(async () => {
       if (!serialPort?.writable) return;
