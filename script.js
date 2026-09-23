@@ -58,7 +58,7 @@ function buildTelemetryFrame() {
   return {
     device_id: "Estação 001",
     timestamp: new Date().toISOString(),
-    led: state.ledEnabled,
+    ledEnabled: state.ledEnabled,
     sensors: Object.fromEntries(Object.entries(state.sensors).map(([key, sensor]) => [key, Number(fmt(sensor.value, sensor.step))])),
   };
 }
