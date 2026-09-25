@@ -227,7 +227,6 @@ function setValue(key, value, syncSlider) {
     sliderEl.style.setProperty("--pct", pct(s) + "%");
   }
   saveState();
-  sendTelemetryFrame();
 }
 
 function updateStationControls() {
@@ -239,11 +238,6 @@ async function toggleStation() {
   state.ledEnabled = !state.ledEnabled;
   updateStationControls();
   saveState();
-
-  if (serialPort) {
-    sendTelemetryFrame();
-    return;
-  }
 }
 
 function easeInOutQuad(t) { return t < 0.5 ? 2*t*t : 1 - Math.pow(-2*t+2, 2)/2; }
